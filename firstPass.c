@@ -21,7 +21,7 @@ firstPass(FILE* fp,label* labels, int* IC, int* DC)
 		}
 		else
 		{
-			/*first we will chack if the line is empty or a comment, then we will chack if is starts with a labal*/
+			/*first we will chack if the line is empty or a comment, then we will chack if is starts with a label*/
 			
 		}
 	}
