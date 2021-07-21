@@ -15,12 +15,11 @@ firstPass(FILE* fp,label* labels, int* IC, int* DC)
 		}
 		else
 		{
-			line[lineCount + 1] = '\0';
+			line[lineCount] = '\0';
+			
 			/*first we will check if the line is empty or a comment, then we will check if is starts with a label*/
 			
 		}
 	}
-
-
-
+	/*same as else*/
 }
