@@ -4,7 +4,7 @@
 
 int main(int argc, char *argv[])
 {
-	operation[26] operations{
+	operation[numOfOperations] operations{
 		{"add",'R',1,0},
 		{"sub",'R',2,0},
 		{"and",'R',3,0},
@@ -36,11 +36,13 @@ int main(int argc, char *argv[])
 	}
 	label* labels = (lable*)calloc(10, sizeof(label));
 	labels[9] = NULL;
+	int labelCount = 0;
 	unsigned char* output;
 	int IC = 100;
 	int DC = 0;
 	int x;
 	FILE* fp = NULL;
+	bool firstPassSuccessful = false;
 	for (x = 1; x < argc; x++){
 		char* fileName = argv[x];
 		fp = fopen(filename, r);
@@ -49,12 +51,17 @@ int main(int argc, char *argv[])
 			printf("Error, couldn't open file %s", filename);
 			continue;
 		}
-		firstPass(fp,labels, &IC, &DC);
-		output = (unsigned char*)calloc(IC - 100, 1)
-		secondPass(fp,labels, output, &IC, &DC);
-		createObject(output);
-		createExt(labels);
-		createEnt(labels);
+		labelCount = firstPass(fp,labels, &IC, &DC, operations);
+		firstPassSuccessful = labelCount >= 0;
+		output = (unsigned char*)calloc(IC + DC - 100, 1) 
+		if(firstPassSuccessful == true)
+		{
+			secondPass(fp,labels,labelCount,output, &IC, &DC, operations);
+			createObject(output);
+			createExt(labels);
+			createEnt(labels);	
+		}
+		
 		fclose(fp);
 	}
 	return 0;
