@@ -45,7 +45,7 @@ int firstPass(FILE* fp,label* labels, int* IC, int* DC, operation* operations)
 				char* label = NULL;
 				if(sscanf(line, "%s: ",label) == 1 && checkLabel(label,labels,labelCount,operations, lineCount))
 				{
-					/*add the label to the tabel*/
+					/*add the label to the tabel, continue scanning until end of line*/
 					labelCount++;	
 				}
 				/*sscanf for a guidance word*/
