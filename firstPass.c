@@ -2,7 +2,7 @@
 
 #include "utilityFunctions.h"
 
-int firstPass(FILE* fp,label* labels, int* IC, int* DC, operation* operations)
+int firstPass(FILE* fp,label** labels, int* IC, int* DC, operation* operations)
 {
 	char line = char[81];
 	int labelCount = 0;
@@ -40,14 +40,34 @@ int firstPass(FILE* fp,label* labels, int* IC, int* DC, operation* operations)
 					firstChar = line[i];
 					break;
 			}
+
 			if(isEmptyLine == false && firstChar != ';') /* not an empty line and not a comment*/
 			{
 				char* label = NULL;
-				if(sscanf(line, "%s: ",label) == 1 && checkLabel(label,labels,labelCount,operations, lineCount))
+				bool checkLabel;
+				if(sscanf(line, "%s: ",label) == 1 && (checkLabel = checkLabel(label,*labels,labelCount,operations, lineCount) ))
 				{
+					if(labelCount%10 == 0){
+
+
+					}
 					/*add the label to the tabel, continue scanning until end of line*/
+					char* operation = NULL;
+					sscanf(line, "%s", operation);
+					int guidanceNum = isGuidance(operation + 1); /*taking the next pointer to skip the point in the first char*/
+					if(operation[0] == '.' && guidanceNum >= 0){
+
+						 if( guidanceNum <= 3){
+
+							*labels[labelCount] = {label,DC+IC,false,false,true,false}; /*not clear if the value is IC or DC, check later*/
+
+						 }
+					}
+
+
 					labelCount++;	
 				}
+				if (!checkLabel) continue;
 				/*sscanf for a guidance word*/
 				/*sscanf for an operation word*/
 			}

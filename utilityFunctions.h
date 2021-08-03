@@ -24,4 +24,4 @@ typedef struct
 char* checkLabel(char* label,label* labels, int labelCount, operation*, int lineCount); 
 int operationNum(operation* operations, char* string);
 int labelNum(label* labels,int labelCount, char* string);
-bool isGuidance(char* string);
+int isGuidance(char* string);

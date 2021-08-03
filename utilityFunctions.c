@@ -15,7 +15,7 @@ bool checkLabel(char* label,label* labels, int labelCount, operation* operations
 	} 
 	
 	if(labelNum((operations,label)  == -1){
-		printf("Line %d: a label with that name already exist", lineCount);
+		printf("Line %d: a label with that name already exists", lineCount);
 		return false;
 		
 	}
@@ -59,15 +59,15 @@ int labelNum(label* labels,int labelCount, char* string){
 	return -1;
 }
 
-bool isGuidance(char* string){
+int isGuidance(char* string){
 	char[numOfGuidance]* guidanceWords = {"db","dw","dh","asciz","entry","extern"}
 	 for(int i = 0, i < numOfGuidanceWords, i++)
 	{
 		if(strcmp(label,guidanceWords[i]) == 0){
-			return true;
+			return i;
 		}
 	}
-	return false;
+	return -1;
 }
 
 
