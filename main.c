@@ -4,7 +4,7 @@
 
 int main(int argc, char *argv[])
 {
-	operation[numOfOperations] operations{
+	operation operations[numOfOperations] = {
 		{"add",'R',1,0},
 		{"sub",'R',2,0},
 		{"and",'R',3,0},
@@ -31,29 +31,29 @@ int main(int argc, char *argv[])
 		{"jmp",'J',0,30},
 		{"la",'J',0,31},
 		{"call",'J',0,32},
-		{"stop",'J',0,63}};
+		{"stop",'J',0,63}
 		
-	}
-	label* labels = (lable*)calloc(10, sizeof(label));
-	labels[9] = NULL;
+	};
+	label* labels = (label*)calloc(10, sizeof(label));
+	labels[9];
 	int labelCount = 0;
 	unsigned char* output;
 	int IC = 100;
 	int DC = 0;
-	int x;
+	int x ;
 	FILE* fp = NULL;
 	bool firstPassSuccessful = false;
 	for (x = 1; x < argc; x++){
 		char* fileName = argv[x];
-		fp = fopen(filename, r);
-		if(!approved(filename) || fp == NULL)
+		fp = fopen(fileName, "r");
+		if(!approved(fileName) || fp == NULL)
 		{
-			printf("Error, couldn't open file %s", filename);
+			printf("Error, couldn't open file %s", fileName);
 			continue;
 		}
-		labelCount = firstPass(fp,labels, &IC, &DC, operations);
+		labelCount = firstPass(fp,&labels, &IC, &DC, operations);
 		firstPassSuccessful = labelCount >= 0;
-		output = (unsigned char*)calloc(IC + DC - 100, 1) 
+		output = (unsigned char*)calloc(IC + DC - 100, 1); 
 		if(firstPassSuccessful == true)
 		{
 			secondPass(fp,labels,labelCount,output, &IC, &DC, operations);

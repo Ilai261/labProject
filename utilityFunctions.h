@@ -4,7 +4,7 @@
 #include <string.h>
 typedef struct  
 {
-	char[5] operationName;
+	char operationName[5];
 	char operationType;
 	int funct;
 	int opcode;
@@ -21,7 +21,7 @@ typedef struct
 	bool isCode;
 } label;
 
-char* checkLabel(char* label,label* labels, int labelCount, operation*, int lineCount); 
+bool checkLabel(char* labelName,label* labels, int labelCount, operation*, int lineCount); 
 int operationNum(operation* operations, char* string);
 int labelNum(label* labels,int labelCount, char* string);
 int isGuidance(char* string);

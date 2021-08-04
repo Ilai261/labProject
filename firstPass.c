@@ -4,11 +4,12 @@
 
 int firstPass(FILE* fp,label** labels, int* IC, int* DC, operation* operations)
 {
-	char line = char[81];
+	char line[81];
 	int labelCount = 0;
 	int lineLength = 0;
 	int lineCount = 1;
 	bool isSuccessful = true;
+	char c;
 	while((c = getc(fp)) != EOF)
 	{
 		if(c != '\n')
@@ -33,7 +34,7 @@ int firstPass(FILE* fp,label** labels, int* IC, int* DC, operation* operations)
 			char firstChar = ' ';
 			
 			
-			for(i; i < LineLength; i++)
+			for(i; i < lineLength; i++)
 			{
 				if(!isspace(line[i]))
 					isEmptyLine = false;
@@ -43,13 +44,12 @@ int firstPass(FILE* fp,label** labels, int* IC, int* DC, operation* operations)
 
 			if(isEmptyLine == false && firstChar != ';') /* not an empty line and not a comment*/
 			{
-				char* label = NULL;
-				bool checkLabel;
-				if(sscanf(line, "%s: ",label) == 1 && (checkLabel = checkLabel(label,*labels,labelCount,operations, lineCount) ))
+				char* labelName;
+				bool isLabel;
+				if(sscanf(line, "%s: ",labelName) == 1 && (isLabel = checkLabel(labelName,*labels, labelCount, operations, lineCount) ))
 				{
 					if(labelCount%10 == 0){
-
-
+						*labels = realloc(*labels,sizeof(label)*(labelCount + 10));
 					}
 					/*add the label to the tabel, continue scanning until end of line*/
 					char* operation = NULL;
@@ -58,9 +58,9 @@ int firstPass(FILE* fp,label** labels, int* IC, int* DC, operation* operations)
 					if(operation[0] == '.' && guidanceNum >= 0){
 
 						 if( guidanceNum <= 3){
-
-							*labels[labelCount] = {label,DC+IC,false,false,true,false}; /*not clear if the value is IC or DC, check later*/
-
+							 label labelToAdd = {labelName,*DC+*IC,false,false,true,false};
+							(*labels)[labelCount] = labelToAdd ; /*not clear if the value is IC or DC, check later*/
+							
 						 }
 					}
 
