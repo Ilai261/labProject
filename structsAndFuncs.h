@@ -27,7 +27,7 @@ typedef struct
 
 
 
-int firstPass(FILE* fp,label** labels, int* IC, int* DC, operation* operations);
+int firstPass(FILE* fp,label** labels,unsigned char** dataArray, int* IC, int* DC, operation* operations);
 void secondPass(FILE *,label *, int labelCount ,unsigned char*, int*, int*);
 void createObject(unsigned char*);
 void createExt(label*);

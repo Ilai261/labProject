@@ -71,7 +71,67 @@ int isGuidance(char* string){
 }
 
 
+void writeDataFromGuidance(int guidanceNum,unsigned char** dataArray,int *DC,char* dataString){
+	if(guidanceNum == 0){
+		int i = 0;
+		char num;
+		*dataArray = realloc(*dataArray,*DC+20);
+		
+		if(sscanf(dataString,"%hhd", &num)) {
+			*dataArray[*DC+i] = num;
+			i++;
+		}
+		while(sscanf(dataString,",%hhd", &num)){
+			*dataArray[*DC+i] = num;
+			i++;
+		}
+		*DC += i;
+	}
+	if(guidanceNum == 1){
+		int i = 0;
+		short int  num;
+		*dataArray = realloc(*dataArray,*DC+40);
+		
+		if(sscanf(dataString,"%hd", &num)) {
+			*dataArray[*DC+i] = num;
+			i +=2;
+		}
+		while(sscanf(dataString,",%hd", &num)){
+			*dataArray[*DC+i] = num;
+			i +=2;
+		}
+		*DC += i;
+	}
+	if(guidanceNum == 2){
+		int i = 0;
+		int  num;
+		*dataArray = realloc(*dataArray,*DC+40);
+		
+		if(sscanf(dataString,"%d", &num)) {
+			*dataArray[*DC+i] = num;
+			i += 4;
+		}
+		while(sscanf(dataString,",%d", &num)){
+			*dataArray[*DC+i] = num;
+			i += 4;
+		}
+		*DC += i;
+	}
+	if(guidanceNum == 3){
+		char* s;
+		int sLength;
+		sscanf(dataString,"\"%s\"", &s);
+		sLength = strlen(s);
+		*DC += sLength;
+		*dataArray = realloc(*dataArray,*DC);
+		 int i;
+		 for(i = 0; i< sLength; i++){
 
+			*dataArray[*DC+i] = s[i];
+
+		 }
+	}
+}
 
 
 

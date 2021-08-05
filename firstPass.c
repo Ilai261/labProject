@@ -2,7 +2,7 @@
 
 #include "utilityFunctions.h"
 
-int firstPass(FILE* fp,label** labels, int* IC, int* DC, operation* operations)
+int firstPass(FILE* fp,label** labels,unsigned char** dataArray, int* IC, int* DC, operation* operations)
 {
 	char line[81];
 	int labelCount = 0;
@@ -36,39 +36,45 @@ int firstPass(FILE* fp,label** labels, int* IC, int* DC, operation* operations)
 			
 			for(i; i < lineLength; i++)
 			{
-				if(!isspace(line[i]))
+				if(!isspace(line[i])){
 					isEmptyLine = false;
 					firstChar = line[i];
 					break;
+				}
 			}
 
 			if(isEmptyLine == false && firstChar != ';') /* not an empty line and not a comment*/
 			{
 				char* labelName;
-				bool isLabel;
-				if(sscanf(line, "%s: ",labelName) == 1 && (isLabel = checkLabel(labelName,*labels, labelCount, operations, lineCount) ))
+				bool isLabel = false;
+				bool isLabelOk = false;
+				if(sscanf(line, "%s: ",labelName) == 1 && (isLabelOk = checkLabel(labelName,*labels, labelCount, operations, lineCount) ))
 				{
+
+					isLabel = true;
 					if(labelCount%10 == 0){
-						*labels = realloc(*labels,sizeof(label)*(labelCount + 10));
+					*labels = realloc(*labels,sizeof(label)*(labelCount + 10));
 					}
-					/*add the label to the tabel, continue scanning until end of line*/
-					char* operation = NULL;
-					sscanf(line, "%s", operation);
-					int guidanceNum = isGuidance(operation + 1); /*taking the next pointer to skip the point in the first char*/
-					if(operation[0] == '.' && guidanceNum >= 0){
-
-						 if( guidanceNum <= 3){
-							 label labelToAdd = {labelName,*DC+*IC,false,false,true,false};
-							(*labels)[labelCount] = labelToAdd ; /*not clear if the value is IC or DC, check later*/
-							
-						 }
-					}
-
-
-					labelCount++;	
+					labelCount++;
 				}
-				if (!checkLabel) continue;
-				/*sscanf for a guidance word*/
+				if (!isLabelOk) continue;
+				/*add the label to the tabel, continue scanning until end of line*/
+				char* operation = NULL;
+				sscanf(line, "%s", operation);
+				int guidanceNum = isGuidance(operation + 1); /*taking the next pointer to skip the point in the first char*/
+				if(operation[0] == '.' && guidanceNum >= 0){
+
+						if( guidanceNum <= 3){
+							if(isLabel){
+								label labelToAdd = {labelName,*DC,false,false,true,false};
+								(*labels)[labelCount] = labelToAdd ; /*not clear if the value is IC or DC, check later*/
+							}
+							char * dataSring;
+							sscanf(line,"%s",dataSring);
+							*dataArray = realloc(*dataArray,*DC+20);
+							writeDataFromGuidance(guidanceNum,dataArray,DC,dataSring);
+						}
+				}
 				/*sscanf for an operation word*/
 			}
 			lineCount++;
@@ -83,3 +89,4 @@ int firstPass(FILE* fp,label** labels, int* IC, int* DC, operation* operations)
 	if (!isSuccessful) return -1;
 	return labelCount;
 }
+ 

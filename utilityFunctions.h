@@ -25,3 +25,4 @@ bool checkLabel(char* labelName,label* labels, int labelCount, operation*, int l
 int operationNum(operation* operations, char* string);
 int labelNum(label* labels,int labelCount, char* string);
 int isGuidance(char* string);
+void writeDataFromGuidance(int guidanceNum,unsigned char** dataArray,int *DC,char* dataString);

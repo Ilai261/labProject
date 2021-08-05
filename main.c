@@ -34,10 +34,10 @@ int main(int argc, char *argv[])
 		{"stop",'J',0,63}
 		
 	};
-	label* labels = (label*)calloc(10, sizeof(label));
-	labels[9];
+	label* labels;
 	int labelCount = 0;
-	unsigned char* output;
+	unsigned char* codeArray;
+	unsigned char* dataArray;
 	int IC = 100;
 	int DC = 0;
 	int x ;
@@ -51,13 +51,14 @@ int main(int argc, char *argv[])
 			printf("Error, couldn't open file %s", fileName);
 			continue;
 		}
-		labelCount = firstPass(fp,&labels, &IC, &DC, operations);
+
+		labelCount = firstPass(fp,&labels,&dataArray, &IC, &DC, operations);
 		firstPassSuccessful = labelCount >= 0;
-		output = (unsigned char*)calloc(IC + DC - 100, 1); 
+		codeArray = (unsigned char*)calloc(IC, 1); 
 		if(firstPassSuccessful == true)
 		{
-			secondPass(fp,labels,labelCount,output, &IC, &DC, operations);
-			createObject(output);
+			secondPass(fp,labels,labelCount,codeArray, &IC, &DC, operations);
+			createObject(codeArray);
 			createExt(labels);
 			createEnt(labels);	
 		}
