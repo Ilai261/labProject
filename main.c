@@ -36,7 +36,7 @@ int main(int argc, char *argv[])
 	};
 	label* labels;
 	int labelCount = 0;
-	unsigned char* codeArray;
+	unsigned int* codeArray;
 	unsigned char* dataArray;
 	int IC = 100;
 	int DC = 0;
@@ -51,10 +51,9 @@ int main(int argc, char *argv[])
 			printf("Error, couldn't open file %s", fileName);
 			continue;
 		}
-
-		labelCount = firstPass(fp,&labels,&dataArray, &IC, &DC, operations);
+		labelCount = firstPass(fp,&labels,&dataArray, &codeArray, &IC, &DC, operations);
 		firstPassSuccessful = labelCount >= 0;
-		codeArray = (unsigned char*)calloc(IC, 1); 
+		
 		if(firstPassSuccessful == true)
 		{
 			secondPass(fp,labels,labelCount,codeArray, &IC, &DC, operations);

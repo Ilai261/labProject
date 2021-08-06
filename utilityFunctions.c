@@ -122,17 +122,20 @@ void writeDataFromGuidance(int guidanceNum,unsigned char** dataArray,int *DC,cha
 		int sLength;
 		sscanf(dataString,"\"%s\"", &s);
 		sLength = strlen(s);
-		*DC += sLength;
-		*dataArray = realloc(*dataArray,*DC);
+		*dataArray = realloc(*dataArray,*DC+sLength);
 		 int i;
 		 for(i = 0; i< sLength; i++){
-
 			*dataArray[*DC+i] = s[i];
-
 		 }
+		 *DC += sLength;
 	}
 }
+int oparationCode(operation currentOperation, char* parameters){
+	
 
+
+
+}
 
 
 
