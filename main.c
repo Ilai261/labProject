@@ -1,6 +1,6 @@
 /* This is the file that runs the main function of the assembler */
 
-#include "structsAndFuncs.h"
+#include "utilityFunctions.h"
 
 int main(int argc, char *argv[])
 {
@@ -34,10 +34,10 @@ int main(int argc, char *argv[])
 		{"stop",'J',0,63}
 		
 	};
-	label* labels;
+	label* labels = NULL;
 	int labelCount = 0;
-	unsigned int* codeArray;
-	unsigned char* dataArray;
+	unsigned int* codeArray = malloc(10);
+	unsigned char* dataArray = malloc(10);
 	int IC = 100;
 	int DC = 0;
 	int x ;
@@ -46,7 +46,7 @@ int main(int argc, char *argv[])
 	for (x = 1; x < argc; x++){
 		char* fileName = argv[x];
 		fp = fopen(fileName, "r");
-		if(!approved(fileName) || fp == NULL)
+		if(/*!approved(fileName) ||*/ fp == NULL)
 		{
 			printf("Error, couldn't open file %s", fileName);
 			continue;
@@ -58,8 +58,8 @@ int main(int argc, char *argv[])
 		{
 			secondPass(fp,labels,labelCount,codeArray, &IC, &DC, operations);
 			createObject(codeArray);
-			createExt(labels);
-			createEnt(labels);	
+			/*createExt(labels);
+			createEnt(labels);	*/
 		}
 		
 		fclose(fp);

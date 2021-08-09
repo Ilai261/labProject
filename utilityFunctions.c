@@ -1,5 +1,4 @@
 #include "utilityFunctions.h"
-#include "structsAndFuncs.h"
 bool checkLabel(char *labelName,label* labels, int labelCount, operation* operations, int lineCount) 
 {
 	if(strlen(labelName) > 31)
@@ -14,19 +13,19 @@ bool checkLabel(char *labelName,label* labels, int labelCount, operation* operat
 		return false;
 	} 
 	
-	if(labelNum(labels,labelCount,labelName)  == -1){
+	if(labelNum(labels,labelCount,labelName)  != -1){
 		printf("Line %d: a label with that name already exists", lineCount);
 		return false;
 		
 	}
 	
-	if(operationNum(operations,labelName)  == -1){
+	if(operationNum(operations,labelName)  != -1){
 		printf("Line %d: label name can't be an operation name", lineCount);
 		return false;
 		
 	}
 	
-	if(isGuidance(labelName)){
+	if(isGuidance(labelName) != -1){
 		printf("Line %d: label name can't be A guidance word name", lineCount);
 		return false;
 		
@@ -75,13 +74,13 @@ void writeDataFromGuidance(int guidanceNum,unsigned char** dataArray,int *DC,cha
 	if(guidanceNum == 0){
 		int i = 0;
 		char num;
-		*dataArray = realloc(*dataArray,*DC+20);
+		*dataArray = realloc(*dataArray,*DC+40);
 		
-		if(sscanf(dataString,"%hhd", &num)) {
+		if(scanIntAndMove(&dataString,"%hhd", &num)) {
 			*dataArray[*DC+i] = num;
 			i++;
 		}
-		while(sscanf(dataString,",%hhd", &num)){
+		while(scanIntAndMove(&dataString,",%hhd", &num)){
 			*dataArray[*DC+i] = num;
 			i++;
 		}
@@ -90,13 +89,13 @@ void writeDataFromGuidance(int guidanceNum,unsigned char** dataArray,int *DC,cha
 	if(guidanceNum == 1){
 		int i = 0;
 		short int  num;
-		*dataArray = realloc(*dataArray,*DC+40);
+		*dataArray = realloc(*dataArray,*DC+80);
 		
-		if(sscanf(dataString,"%hd", &num)) {
+		if(scanIntAndMove(&dataString,"%hd", &num)) {
 			*dataArray[*DC+i] = num;
 			i +=2;
 		}
-		while(sscanf(dataString,",%hd", &num)){
+		while(scanIntAndMove(&dataString,",%hd", &num)){
 			*dataArray[*DC+i] = num;
 			i +=2;
 		}
@@ -105,13 +104,13 @@ void writeDataFromGuidance(int guidanceNum,unsigned char** dataArray,int *DC,cha
 	if(guidanceNum == 2){
 		int i = 0;
 		int  num;
-		*dataArray = realloc(*dataArray,*DC+40);
+		*dataArray = realloc(*dataArray,*DC+160);
 		
-		if(sscanf(dataString,"%d", &num)) {
+		if(scanIntAndMove(&dataString,"%d", &num)) {
 			*dataArray[*DC+i] = num;
 			i += 4;
 		}
-		while(sscanf(dataString,",%d", &num)){
+		while(scanIntAndMove(&dataString,",%d", &num)){
 			*dataArray[*DC+i] = num;
 			i += 4;
 		}
@@ -132,10 +131,81 @@ void writeDataFromGuidance(int guidanceNum,unsigned char** dataArray,int *DC,cha
 }
 int oparationCode(operation currentOperation, char* parameters){
 	
+	unsigned int retVal = 0u;
+	if(currentOperation.operationType == 'R'){
+		int registerArray[3];
+		int registerNum = 0;
+		int registerVal;
+		if (sscanf(parameters, "$%d,$%d,$%d", &registerArray[0], &registerArray[1], &registerArray[2]) > 0) {
+            writeToBits(&retVal, 6, 10, currentOperation.funct);
+            writeToBits(&retVal, 11, 15, registerArray[2]);
+            writeToBits(&retVal, 16, 20, registerArray[1]);
+            writeToBits(&retVal, 21, 25, registerArray[0]);
+            writeToBits(&retVal, 26, 31, currentOperation.opcode);
+        }
+		
+	}
+	return retVal;
+}
 
+writeToBits(unsigned int * placeToWrite,int startBit, int endBit, int data )
+{
+	unsigned int mask = intPow(2,32) - 1;
+	mask -= intPow(2,endBit + 1) - 1;
+	mask += intPow(2,startBit + 1) - 1;
+	*placeToWrite &= mask;
+	*placeToWrite  |= data << startBit;
 
 
 }
+int intPow(int base, int exp)
+{
+    int result = 1;
+    for (;;)
+    {
+        if (exp & 1)
+            result *= base;
+        exp >>= 1;
+        if (!exp)
+            break;
+        base *= base;
+    }
 
+    return result;
+}
 
+int scanStrAndMove(char **readStringPtr, char* formatString, char * writeString){
+	int forwardBy = 0;
+	char* readString = *readStringPtr;
+	while(isspace(readString[forwardBy])){
+		forwardBy++;
+	}
+	int retVal = sscanf(readString,formatString,writeString);
+	forwardBy += strlen(writeString);
+	if(retVal > 0) *readStringPtr += forwardBy;
+	return retVal;
+}
 
+int scanIntAndMove(char **readString, char* formatString, int * writeInt){
+	int forwardBy = 0;
+	while(isspace(*readString[forwardBy])){
+		forwardBy++;
+	}
+	int retVal = sscanf(*readString,formatString,writeInt);
+	forwardBy += numOfDigits(writeInt)-1;
+	if(retVal > 0) *readString += forwardBy;
+	return retVal;
+}
+
+int numOfDigits(int x){
+	if(x == 0) return 1;
+	int retVal = 0;
+	while(x > 0){
+		x /= 10;
+		retVal++;
+	}
+}
+void createObject(unsigned int* dataArray) {
+
+	return 0;
+}

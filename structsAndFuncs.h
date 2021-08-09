@@ -3,6 +3,7 @@
 #include <stdbool.h>
 #include <string.h>
 #include <ctype.h>
+#include <math.h>
 #define numOfOperations 27
 #define numOfGuidanceWords 6
 
@@ -27,9 +28,8 @@ typedef struct
 
 
 
-int firstPass(FILE* fp,label** labels,unsigned char** dataArray,unsigned char** codeArray, int* IC, int* DC, operation* operations);
-void secondPass(FILE *,label *, int labelCount ,unsigned char*, int*, int*);
-void createObject(unsigned char*);
-void createExt(label*);
-void createEnt(label*);
-int oparationCode(operation currentOperation, char* parameters);
+int firstPass(FILE* fp,label** labels,unsigned char** dataArray,unsigned int** codeArray, int* IC, int* DC, operation* operations);
+void secondPass(FILE * fp,label * labels, int labelCount ,unsigned int* dataArray, int* IC, int* DC,operation* operations);
+void createObject(unsigned int*);
+//void createExt(label*);
+//void createEnt(label*);
