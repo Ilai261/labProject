@@ -76,12 +76,12 @@ void writeDataFromGuidance(int guidanceNum,unsigned char** dataArray,int *DC,cha
 		char num;
 		*dataArray = realloc(*dataArray,*DC+40);
 		
-		if(scanIntAndMove(&dataString,"%hhd", &num)) {
-			*dataArray[*DC+i] = num;
+		if(scanIntAndMove(&dataString,"%hhd", &num) > 0) {
+			(*dataArray)[*DC+i] = num;
 			i++;
 		}
-		while(scanIntAndMove(&dataString,",%hhd", &num)){
-			*dataArray[*DC+i] = num;
+		while(scanIntAndMove(&dataString,",%hhd", &num) > 0){
+			(*dataArray)[*DC+i] = num;
 			i++;
 		}
 		*DC += i;
@@ -91,12 +91,12 @@ void writeDataFromGuidance(int guidanceNum,unsigned char** dataArray,int *DC,cha
 		short int  num;
 		*dataArray = realloc(*dataArray,*DC+80);
 		
-		if(scanIntAndMove(&dataString,"%hd", &num)) {
-			*dataArray[*DC+i] = num;
+		if(scanIntAndMove(&dataString,"%hd", &num) > 0) {
+			(*dataArray)[*DC+i] = num;
 			i +=2;
 		}
-		while(scanIntAndMove(&dataString,",%hd", &num)){
-			*dataArray[*DC+i] = num;
+		while(scanIntAndMove(&dataString,",%hd", &num) > 0){
+			(*dataArray)[*DC+i] = num;
 			i +=2;
 		}
 		*DC += i;
@@ -106,25 +106,23 @@ void writeDataFromGuidance(int guidanceNum,unsigned char** dataArray,int *DC,cha
 		int  num;
 		*dataArray = realloc(*dataArray,*DC+160);
 		
-		if(scanIntAndMove(&dataString,"%d", &num)) {
-			*dataArray[*DC+i] = num;
+		if(scanIntAndMove(&dataString,"%d", &num) > 0) {
+			(*dataArray)[*DC+i] = num;
 			i += 4;
 		}
-		while(scanIntAndMove(&dataString,",%d", &num)){
-			*dataArray[*DC+i] = num;
+		while(scanIntAndMove(&dataString,",%d", &num) > 0){
+			(*dataArray)[*DC+i] = num;
 			i += 4;
 		}
 		*DC += i;
 	}
 	if(guidanceNum == 3){
-		char* s;
 		int sLength;
-		sscanf(dataString,"\"%s\"", &s);
-		sLength = strlen(s);
+		sLength = strlen(dataString);
 		*dataArray = realloc(*dataArray,*DC+sLength);
 		 int i;
-		 for(i = 0; i< sLength; i++){
-			*dataArray[*DC+i] = s[i];
+		 for(i = 1; i< sLength - 1; i++){
+			(*dataArray)[*DC+i] = dataString[i];
 		 }
 		 *DC += sLength;
 	}
@@ -155,8 +153,6 @@ writeToBits(unsigned int * placeToWrite,int startBit, int endBit, int data )
 	mask += intPow(2,startBit + 1) - 1;
 	*placeToWrite &= mask;
 	*placeToWrite  |= data << startBit;
-
-
 }
 int intPow(int base, int exp)
 {
@@ -209,3 +205,11 @@ void createObject(unsigned int* dataArray) {
 
 	return 0;
 }
+
+bool approved(char* fileName) {
+	int i = 0;
+	while (fileName[i] != '\0') i++;
+	if (i >= 5 && fileName[i - 1] == 's' && fileName[i - 2] == 'a' && fileName[i - 3] == '.') return true;
+	return false;
+}
+		

@@ -46,7 +46,7 @@ int main(int argc, char *argv[])
 	for (x = 1; x < argc; x++){
 		char* fileName = argv[x];
 		fp = fopen(fileName, "r");
-		if(/*!approved(fileName) ||*/ fp == NULL)
+		if(!approved(fileName) || fp == NULL)
 		{
 			printf("Error, couldn't open file %s", fileName);
 			continue;

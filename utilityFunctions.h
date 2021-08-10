@@ -10,3 +10,4 @@ int scanStrAndMove(char **readString, char* formatString, char * writeString);
 int scanIntAndMove(char **readString, char* formatString, int * writeInt);
 int numOfDigits(int x);
 int operationCode(operation currentOperation, char* parameters);
+bool approved(char* fileName);

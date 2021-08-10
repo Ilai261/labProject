@@ -52,7 +52,7 @@ int firstPass(FILE* fp, label** labels, unsigned char** dataArray, unsigned int*
 
 			if (isEmptyLine == false && firstChar != ';') /* not an empty line and not a comment*/
 			{
-				char labelName[32];
+				char *labelName = malloc(32);
 				bool isLabel = false;
 				bool isLabelOk = true;
 				int i = 0;
@@ -65,7 +65,7 @@ int firstPass(FILE* fp, label** labels, unsigned char** dataArray, unsigned int*
 
 							isLabel = true;
 							if (labelCount % 10 == 0) {
-								*labels = realloc(*labels, sizeof(label) * (labelCount + 10));
+								*labels = (label*)realloc(*labels, sizeof(label) * (labelCount + 10));
 							}
 							labelCount++;
 						}
@@ -83,6 +83,7 @@ int firstPass(FILE* fp, label** labels, unsigned char** dataArray, unsigned int*
 					scanStrAndMove(&line, "%s", operationName);
 				}
 				else {
+					free(operationName);
 					operationName = labelName;
 				}
 				int guidanceNum = isGuidance(operationName + 1); /*taking the next pointer to skip the point in the first char*/
@@ -90,25 +91,32 @@ int firstPass(FILE* fp, label** labels, unsigned char** dataArray, unsigned int*
 
 					if (guidanceNum <= 3) {
 						if (isLabel) {
-							label labelToAdd = { labelName,*DC,false,false,true,false };
-							(*labels)[labelCount] = labelToAdd;
+							label labelToAdd = { "",*DC,false,false,true,false };
+							strcat(labelToAdd.symbol, labelName);
+							(*labels)[labelCount - 1] = labelToAdd;
 						}
-						int lengthCounter = 0;
-						int addedLength = 0;
-						int dataStringCap = 100;
-						char* dataString = (char*)calloc(100, 1);
-						dataString = "";
-						char* temp = NULL;
-						while (scanStrAndMove(&line, "%s", temp))
-						{
-							addedLength = strlen(temp);
-							if (lengthCounter + addedLength >= dataStringCap - 1)
-							{
-								dataString = (char*)realloc(dataString, dataStringCap + 100); /*sussy if there is an error*/
-								dataStringCap += 100;
-							}
+						//int lengthCounter = 0;
+						//int addedLength = 0;
+						//int dataStringCap = 100;
+						//char* dataString = (char*)calloc(100, 1);
+						//dataString = "";
+						//char* temp = NULL;
+						//while (scanStrAndMove(&line, "%s", temp))
+						//{
+						//	addedLength = strlen(temp);
+						//	if (lengthCounter + addedLength >= dataStringCap - 1)
+						//	{
+						//		dataString = (char*)realloc(dataString, dataStringCap + 100); /*sussy if there is an error*/
+						//		dataStringCap += 100;
+						//	}
+						//	strcat(dataString, temp);
+						//	lengthCounter += addedLength;
+						//}
+						char dataString[80] = "";
+						char  temp[80] = "";
+
+						while (scanStrAndMove(&line, "%s", temp) > 0) {
 							strcat(dataString, temp);
-							lengthCounter += addedLength;
 						}
 						writeDataFromGuidance(guidanceNum, dataArray, DC, dataString);
 					}
@@ -122,10 +130,11 @@ int firstPass(FILE* fp, label** labels, unsigned char** dataArray, unsigned int*
 							scanStrAndMove(&line, "%s", externName);
 							if (checkLabel(externName, *labels, labelCount, operations, lineCount)) {
 								if (labelCount % 10 == 0) {
-									*labels = realloc((*labels), sizeof(label) * (labelCount + 10));
+									*labels = (label*)realloc((*labels), sizeof(label) * (labelCount + 10));
 								}
-								label labelToAdd = { externName,0,false,true,false,false };
-								(*labels)[labelCount] = labelToAdd;
+								label labelToAdd = { "",0,false,true,false,false };
+								strcat(labelToAdd.symbol, externName);
+								(*labels)[labelCount - 1] = labelToAdd;
 								if (isLabel) printf("Line %d: label before extern is meaningless", lineCount);
 								labelCount++;
 							}
@@ -135,8 +144,9 @@ int firstPass(FILE* fp, label** labels, unsigned char** dataArray, unsigned int*
 				}
 				else {
 					if (isLabel) {
-						label labelToAdd = { labelName,*IC,false,false,false,true };
-						(*labels)[labelCount] = labelToAdd;
+						label labelToAdd = { "",*IC,false,false,false,true };
+						strcat(labelToAdd.symbol, labelName);
+						(*labels)[labelCount-1] = labelToAdd;
 					}
 
 					int operationNumber = operationNum(operations, operationName);
@@ -146,19 +156,29 @@ int firstPass(FILE* fp, label** labels, unsigned char** dataArray, unsigned int*
 						continue;
 
 					}
+
 					operation currentOperation = operations[operationNumber];
 					char parameters[80]  = "";
 					char  temp[80] = "";
+
 					while (scanStrAndMove(&line, "%s", temp) > 0) {
 						strcat(parameters, temp);
 					}
+
 					int codeByte = (*IC - 100);
 					if (codeByte % 40 == 0) {
 						*codeArray = realloc((*codeArray), codeByte + 40);
 					}
+
 					(*codeArray)[codeByte / 4] = oparationCode(currentOperation, parameters);
 					*IC += 4;
+
 				}
+				if (isLabel) {
+					free(operationName);
+				}
+				free(labelName);
+				isNewLine = true;
 				/*sscanf for an operation word*/
 			}
 

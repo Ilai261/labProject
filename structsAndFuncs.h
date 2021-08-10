@@ -18,8 +18,8 @@ typedef struct
 
 typedef struct  
 {
-	char* symbol;
-	int value;
+	char symbol[32];
+	int address;
 	bool isEntry;
 	bool isExternal;
 	bool isData;
