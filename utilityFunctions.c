@@ -132,7 +132,6 @@ int oparationCode(operation currentOperation, char* parameters){
 	unsigned int retVal = 0u;
 	if(currentOperation.operationType == 'R'){
 		int registerArray[3];
-		int registerNum = 0;
 		int registerVal;
 		if (sscanf(parameters, "$%d,$%d,$%d", &registerArray[0], &registerArray[1], &registerArray[2]) > 0) {
             writeToBits(&retVal, 6, 10, currentOperation.funct);
@@ -141,6 +140,33 @@ int oparationCode(operation currentOperation, char* parameters){
             writeToBits(&retVal, 21, 25, registerArray[0]);
             writeToBits(&retVal, 26, 31, currentOperation.opcode);
         }
+		return retVal;
+	}
+	
+	if (currentOperation.operationType == 'I') {
+		if (currentOperation.opcode < 15) {
+			int paramArray[2];
+			short int immed = 0;
+			if (sscanf(parameters, "$%d,%hd,$%d", &paramArray[0], &immed, &paramArray[1]) > 0) {
+				writeToBits(&retVal, 15, 15, (immed > 0)? 1 : 0);
+				writeToBits(&retVal, 0, 14, abs(immed));
+				writeToBits(&retVal, 16, 20, paramArray[1]);
+				writeToBits(&retVal, 21, 25, paramArray[0]);
+				writeToBits(&retVal, 26, 31, currentOperation.opcode);
+			}
+
+		}
+		if (currentOperation.opcode < 19) {
+			int paramArray[2];
+			if (sscanf(parameters, "$%d,$%d", &paramArray[0], &paramArray[1]) > 0) {
+				writeToBits(&retVal, 16, 20 , paramArray[1]);
+				writeToBits(&retVal, 21, 25, paramArray[0]);
+				writeToBits(&retVal, 26, 31, currentOperation.opcode);
+				writeToBits(&retVal, 26, 31, currentOperation.opcode);
+				return retVal;
+			}
+		}
+
 		
 	}
 	return retVal;
