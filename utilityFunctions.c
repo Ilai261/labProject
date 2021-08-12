@@ -279,8 +279,9 @@ bool fileApproved(char* fileName) {
 	return false;
 }
 char* getFileName(char* fileName) {
-
-	int i = 0;
+	char retval[100] = "assemblyCode";
+	return retval;/*will work in linux*/
+	/*int i = 0;
 	char retval[100];
 	strcpy(retval, fileName);
 	while (retval[i] != '\0') i++;
@@ -288,10 +289,12 @@ char* getFileName(char* fileName) {
 	if (i >= 5) {
 		retval[i - 3] = '\0';
 	}
+	return retval;*/
+	
 }
-void createObject(unsigned int* codeArray, char* fileName) {
+void createObject(unsigned int* codeArray, char* assemblyFileName) {
 	FILE* fp;
-	char* filaName = getFileName(fileName);
+	char* filaName = getFileName(assemblyFileName);
 	strcat(filaName, ".ob");
 	fp = fopen(filaName, "w");
 	fprintf(fp, "%s %s %s %d", "We", "are", "in", 2012);

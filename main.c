@@ -4,6 +4,7 @@
 
 int main(int argc, char *argv[])
 {
+	/*kaki*/
 	operation operations[numOfOperations] = {
 		{"add",'R',1,0},
 		{"sub",'R',2,0},
