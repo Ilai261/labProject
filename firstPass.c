@@ -11,15 +11,16 @@ int firstPass(FILE* fp, label** labels, unsigned char** dataArray, unsigned int*
 	bool isSuccessful = true;
 	char c;
 	bool isNewLine = false;
-	while ((c = getc(fp)) != EOF)
+	while (true)
 	{
+		c = getc(fp);
 		if (isNewLine) {
 			line = ogLine;
 			lineCount++;
 			lineLength = 0;
 			isNewLine = false;
 		}
-		if (c != '\n')
+		if (c != '\n' && c != EOF)
 		{
 			if (lineLength <= 80)
 			{
@@ -120,7 +121,7 @@ int firstPass(FILE* fp, label** labels, unsigned char** dataArray, unsigned int*
 							continue;
 						}
 						if (guidanceNum == 5) {
-							char  externName[1];
+							char  externName[32];
 							scanStrAndMove(&line, "%s", externName);
 							if (checkLabel(externName, *labels, labelCount, operations, lineCount)) {
 								if (labelCount % 10 == 0) {
@@ -177,6 +178,7 @@ int firstPass(FILE* fp, label** labels, unsigned char** dataArray, unsigned int*
 			}
 
 		}
+		if (c == EOF)break;
 	}
 	/*same as else*/	
 	if (!isSuccessful) return -1;
