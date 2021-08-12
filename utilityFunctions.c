@@ -1,4 +1,6 @@
 #include "utilityFunctions.h"
+#define DOLLAR '$'
+#define COMMA ','
 bool checkLabel(char *labelName,label* labels, int labelCount, operation* operations, int lineCount) 
 {
 	if(strlen(labelName) > 31)
@@ -310,6 +312,162 @@ void createObject(unsigned int* codeArray, char* assemblyFileName) {
 	free(assemblyFileName);
 	printf("created");
 }
+
+bool parameterCheck(int line, char* parameters, operation currentOperation, int** labelLines)
+{
+	bool retVal = true;
+	*labelLines[0] = 0;
+	int i;
+	int paramNum = 0;
+	int num = 0;
+	char* ogParam = parameters;
+	int countNumLengths = 0;
+	if(currentOperation.operationType == 'R')
+	{
+		if (currentOperation.opcode == 0)
+		{
+			for(i = 0; i++; i <= 2)
+			{
+				if(scanIntAndMove(&parameters, "%d", &num) > 0) paramNum++;
+				if(paramNum > i)
+				{
+					if(num > 31 || num < 0)
+					{
+						printf("Line %d: invalid register number", line);
+						return false;
+					}
+					if(*(parameters) != COMMA) 
+					{
+						printf("Line %d: invalid register defining, no comma", line);
+						return false;
+					}
+					og_xParam = parameters;
+					while(isdigit(*parameters)) parameters--;
+					if(*(parameters) != DOLLAR)
+					{
+						printf("Line %d: invalid register defining, no $", line);
+						return false;
+					}
+					parameters = og_xParam;	
+					countNumLengths += numLength(num);
+				}
+			}
+			if(paramNum < 3)
+			{
+				printf("Line %d: not enough parameters in %s operation", line, currentOperation.operationName);
+			}
+			i = strlen(ogParam);
+			if(i > (6 + countNumLengths)) 
+			{
+				printf("Line %d: invalid char in %s operation parameters", line, currentOperation.operationName);
+			}
+			return retVal;
+		}
+		else 
+		{
+			
+			for(i = 0; i++; i <= 1)
+			{
+				if(scanIntAndMove(&parameters, "%d", &num) > 0) paramNum++;
+				if(paramNum > i)
+				{
+					if(num > 31 || num < 0)
+					{
+						printf("Line %d: invalid register number", line);
+						return false;
+					}
+					if(*(parameters) != COMMA) 
+					{
+						printf("Line %d: invalid register defining, no comma", line);
+						return false;
+					}
+					og_xParam = parameters;
+					while(isdigit(*parameters)) parameters--;
+					if(*(parameters) != DOLLAR)
+					{
+						printf("Line %d: invalid register defining, no $", line);
+						return false;
+					}
+					parameters = og_xParam;	
+					countNumLengths += numLength(num);
+				}
+			}
+			if(paramNum < 3)
+			{
+				printf("Line %d: not enough parameters in %s operation", line, currentOperation.operationName);
+			}
+			i = strlen(ogParam);
+			if(i > (4 + countNumLengths)) 
+			{
+				printf("Line %d: invalid char in %s operation parameters", line, currentOperation.operationName);
+			}
+			return retVal;
+			}
+		}
+	}
+	
+	if (currentOperation.operationType == 'I') {
+		if (currentOperation.opcode < 15) {
+			int paramArray[2];
+			short int immed = 0;
+			if (sscanf(parameters, "$%d,%hd,$%d", &paramArray[0], &immed, &paramArray[1]) > 0) {
+				writeToBits(&retVal, 15, 15, (immed > 0)? 1 : 0);
+				writeToBits(&retVal, 0, 14, abs(immed));
+				writeToBits(&retVal, 16, 20, paramArray[1]);
+				writeToBits(&retVal, 21, 25, paramArray[0]);
+				writeToBits(&retVal, 26, 31, currentOperation.opcode);
+				return retVal;
+			}
+
+		}
+		if (currentOperation.opcode < 19) {
+			int paramArray[2];
+			if (sscanf(parameters, "$%d,$%d", &paramArray[0], &paramArray[1]) > 0) {
+				writeToBits(&retVal, 16, 20 , paramArray[1]);
+				writeToBits(&retVal, 21, 25, paramArray[0]);
+				writeToBits(&retVal, 26, 31, currentOperation.opcode);
+				writeToBits(&retVal, 26, 31, currentOperation.opcode);
+				return retVal;
+			}
+		}
+		else {
+			int paramArray[2];
+			short int immed = 0;
+			if (sscanf(parameters, "$%d,%hd,$%d", &paramArray[0], &immed, &paramArray[1]) > 0) {
+				writeToBits(&retVal, 15, 15, (immed > 0) ? 1 : 0);
+				writeToBits(&retVal, 0, 14, abs(immed));
+				writeToBits(&retVal, 16, 20, paramArray[1]);
+				writeToBits(&retVal, 21, 25, paramArray[0]);
+				writeToBits(&retVal, 26, 31, currentOperation.opcode);
+			}
+		}
+	}
+	if (currentOperation.operationType == 'J') {
+		if (currentOperation.opcode == 30) {
+			int regNum = 0;
+			if (sscanf(parameters, "$%d", &regNum) > 0) {
+				writeToBits(&retVal, 25, 25, 1);
+				writeToBits(&retVal, 0, 24, regNum);
+				writeToBits(&retVal, 26, 31, currentOperation.opcode);
+			}
+			else {
+				writeToBits(&retVal, 25, 25, 0);
+				writeToBits(&retVal, 26, 31, currentOperation.opcode);
+
+			}
+		}
+		if (currentOperation.opcode <= 32) {
+			writeToBits(&retVal, 25, 25, 0);
+			writeToBits(&retVal, 26, 31, currentOperation.opcode);
+		}
+		if (currentOperation.opcode == 63) {
+			writeToBits(&retVal, 26, 31, currentOperation.opcode);
+			writeToBits(&retVal, 0, 25, 0);
+		}
+	}
+	return retVal;
+}
+
 void createEnt(label* labels, char* fileName) 
 {
 

@@ -12,3 +12,4 @@ int operationCode(operation currentOperation, char* parameters);
 bool fileApproved(char* fileName);
 bool fileApproved(char* fileName);
 void writeToBits(unsigned int* placeToWrite, int startBit, int endBit, int data);
+bool parameterCheck(int line, char* parameters, operation currentOperation, int** labelLines);
