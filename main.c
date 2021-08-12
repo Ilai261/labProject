@@ -46,7 +46,7 @@ int main(int argc, char *argv[])
 	for (x = 1; x < argc; x++){
 		char* fileName = argv[x];
 		fp = fopen(fileName, "r");
-		if(!approved(fileName) || fp == NULL)
+		if(!fileApproved(fileName) || fp == NULL)
 		{
 			printf("Error, couldn't open file %s", fileName);
 			continue;
@@ -57,9 +57,9 @@ int main(int argc, char *argv[])
 		if(firstPassSuccessful == true)
 		{
 			secondPass(fp,labels,labelCount,codeArray, &IC, &DC, operations);
-			createObject(codeArray);
-			/*createExt(labels);
-			createEnt(labels);	*/
+			createObject(codeArray, fileName);
+			createExt(labels,  fileName);
+			createEnt(labels, fileName);
 		}
 		
 		fclose(fp);

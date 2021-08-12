@@ -131,16 +131,28 @@ int oparationCode(operation currentOperation, char* parameters){
 	
 	unsigned int retVal = 0u;
 	if(currentOperation.operationType == 'R'){
-		int registerArray[3];
-		int registerVal;
-		if (sscanf(parameters, "$%d,$%d,$%d", &registerArray[0], &registerArray[1], &registerArray[2]) > 0) {
-            writeToBits(&retVal, 6, 10, currentOperation.funct);
-            writeToBits(&retVal, 11, 15, registerArray[2]);
-            writeToBits(&retVal, 16, 20, registerArray[1]);
-            writeToBits(&retVal, 21, 25, registerArray[0]);
-            writeToBits(&retVal, 26, 31, currentOperation.opcode);
-        }
-		return retVal;
+		if (currentOperation.opcode == 0) {
+			int registerArray[3];
+			if (sscanf(parameters, "$%d,$%d,$%d", &registerArray[0], &registerArray[1], &registerArray[2]) > 0) {
+				writeToBits(&retVal, 6, 10, currentOperation.funct);
+				writeToBits(&retVal, 11, 15, registerArray[2]);
+				writeToBits(&retVal, 16, 20, registerArray[1]);
+				writeToBits(&retVal, 21, 25, registerArray[0]);
+				writeToBits(&retVal, 26, 31, currentOperation.opcode);
+				return retVal;
+			}
+		}
+		else {
+			
+			int registerArray[2];
+			if (sscanf(parameters, "$%d,$%d", &registerArray[0], &registerArray[1]) > 0) {
+				writeToBits(&retVal, 6, 10, currentOperation.funct);
+				writeToBits(&retVal, 16, 20, registerArray[1]);
+				writeToBits(&retVal, 21, 25, registerArray[0]);
+				writeToBits(&retVal, 26, 31, currentOperation.opcode);
+				return retVal;
+			}
+		}
 	}
 	
 	if (currentOperation.operationType == 'I') {
@@ -153,6 +165,7 @@ int oparationCode(operation currentOperation, char* parameters){
 				writeToBits(&retVal, 16, 20, paramArray[1]);
 				writeToBits(&retVal, 21, 25, paramArray[0]);
 				writeToBits(&retVal, 26, 31, currentOperation.opcode);
+				return retVal;
 			}
 
 		}
@@ -166,8 +179,39 @@ int oparationCode(operation currentOperation, char* parameters){
 				return retVal;
 			}
 		}
-
-		
+		else {
+			int paramArray[2];
+			short int immed = 0;
+			if (sscanf(parameters, "$%d,%hd,$%d", &paramArray[0], &immed, &paramArray[1]) > 0) {
+				writeToBits(&retVal, 15, 15, (immed > 0) ? 1 : 0);
+				writeToBits(&retVal, 0, 14, abs(immed));
+				writeToBits(&retVal, 16, 20, paramArray[1]);
+				writeToBits(&retVal, 21, 25, paramArray[0]);
+				writeToBits(&retVal, 26, 31, currentOperation.opcode);
+			}
+		}
+	}
+	if (currentOperation.operationType == 'J') {
+		if (currentOperation.opcode == 30) {
+			int regNum = 0;
+			if (sscanf(parameters, "$%d", &regNum) > 0) {
+				writeToBits(&retVal, 25, 25, 1);
+				writeToBits(&retVal, 0, 24, regNum);
+				writeToBits(&retVal, 26, 31, currentOperation.opcode);
+			}
+			else {
+				writeToBits(&retVal, 25, 25, 0);
+				writeToBits(&retVal, 26, 31, currentOperation.opcode);
+			}
+		}
+		if (currentOperation.opcode <= 32) {
+			writeToBits(&retVal, 25, 25, 0);
+			writeToBits(&retVal, 26, 31, currentOperation.opcode);
+		}
+		if (currentOperation.opcode == 63) {
+			writeToBits(&retVal, 26, 31, currentOperation.opcode);
+			writeToBits(&retVal, 0, 25, 0);
+		}
 	}
 	return retVal;
 }
@@ -227,15 +271,40 @@ int numOfDigits(int x){
 		retVal++;
 	}
 }
-void createObject(unsigned int* dataArray) {
 
-	return 0;
-}
-
-bool approved(char* fileName) {
+bool fileApproved(char* fileName) {
 	int i = 0;
 	while (fileName[i] != '\0') i++;
 	if (i >= 5 && fileName[i - 1] == 's' && fileName[i - 2] == 'a' && fileName[i - 3] == '.') return true;
 	return false;
 }
-		
+char* getFileName(char* fileName) {
+
+	int i = 0;
+	char retval[100];
+	strcpy(retval, fileName);
+	while (retval[i] != '\0') i++;
+
+	if (i >= 5) {
+		retval[i - 3] = '\0';
+	}
+}
+void createObject(unsigned int* codeArray, char* fileName) {
+	FILE* fp;
+	char* filaName = getFileName(fileName);
+	strcat(filaName, ".ob");
+	fp = fopen(filaName, "w");
+	fprintf(fp, "%s %s %s %d", "We", "are", "in", 2012);
+
+	fclose(fp);
+
+	return(0);
+
+}
+void createEnt(label* labels) {
+
+}
+
+void createExt(label* labels) {
+
+}
