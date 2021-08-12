@@ -76,15 +76,15 @@ int isGuidance(char* string){
 void writeDataFromGuidance(int guidanceNum,unsigned char** dataArray,int *DC,char* dataString){
 	if(guidanceNum == 0){
 		int i = 0;
-		char num;
+		int num = 0u;
 		*dataArray = realloc(*dataArray,*DC+40);
 		
-		if(scanIntAndMove(&dataString,"%hhd", (int*)&num) > 0) 
+		if(scanIntAndMove(&dataString,"%hhd", &num) > 0) 
 		{
 			(*dataArray)[*DC+i] = num;
 			i++;
 		}
-		while(scanIntAndMove(&dataString,",%hhd", (int*)&num) > 0){
+		while(scanIntAndMove(&dataString,",%hhd", &num) > 0){
 			(*dataArray)[*DC+i] = num;
 			i++;
 		}
@@ -92,14 +92,14 @@ void writeDataFromGuidance(int guidanceNum,unsigned char** dataArray,int *DC,cha
 	}
 	if(guidanceNum == 1){
 		int i = 0;
-		short int  num;
+		int num = 0u;
 		*dataArray = realloc(*dataArray,*DC+80);
 		
-		if(scanIntAndMove(&dataString,"%hd", (int*)&num) > 0) {
+		if(scanIntAndMove(&dataString,"%hd", &num) > 0) {
 			(*dataArray)[*DC+i] = num;
 			i +=2;
 		}
-		while(scanIntAndMove(&dataString,",%hd", (int*)&num) > 0){
+		while(scanIntAndMove(&dataString,",%hd", &num) > 0){
 			(*dataArray)[*DC+i] = num;
 			i +=2;
 		}
@@ -265,18 +265,20 @@ int scanIntAndMove(char **readString, char* formatString, int * writeInt){
 		forwardBy++;
 	}
 	retVal = sscanf(*readString,formatString,writeInt);
-	forwardBy += numOfDigits(*writeInt)-1;
+	forwardBy += numberLength(*writeInt)-1;
 	if(retVal > 0) *readString += forwardBy;
 	return retVal;
 }
 
-int numOfDigits(int x){
+int numberLength(int num){
+	int x = abs(num);
 	int retVal = 0;
 	if(x == 0) return 1;
 	while(x > 0){
 		x /= 10;
 		retVal++;
 	}
+	if (num < 0) retVal++;
 	return retVal;
 }
 
