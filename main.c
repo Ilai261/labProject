@@ -4,7 +4,7 @@
 
 int main(int argc, char *argv[])
 {
-	operation operations[numOfOperations] = {
+	operation operations[numOfOperations] = {/*add this array to the operation num function*/
 		{"add",'R',1,0},
 		{"sub",'R',2,0},
 		{"and",'R',3,0},
@@ -32,7 +32,6 @@ int main(int argc, char *argv[])
 		{"la",'J',0,31},
 		{"call",'J',0,32},
 		{"stop",'J',0,63}
-		
 	};
 	label* labels = NULL;
 	int labelCount = 0;
