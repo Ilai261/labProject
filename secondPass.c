@@ -4,5 +4,4 @@
 void secondPass(FILE *fp, label *labels, int labelCount, unsigned int *dataArray, int *IC, int *DC,operation* operations)
 {
 
-	return 0;
 }

@@ -4,7 +4,6 @@
 
 int main(int argc, char *argv[])
 {
-	/*kaki*/ /*od kaki*/
 	operation operations[numOfOperations] = {
 		{"add",'R',1,0},
 		{"sub",'R',2,0},
@@ -44,6 +43,7 @@ int main(int argc, char *argv[])
 	int x ;
 	FILE* fp = NULL;
 	bool firstPassSuccessful = false;
+	printf("NHKSD\n\nBUGO\n\n");
 	for (x = 1; x < argc; x++){
 		char* fileName = argv[x];
 		fp = fopen(fileName, "r");
