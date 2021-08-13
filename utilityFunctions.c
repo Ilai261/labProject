@@ -313,14 +313,14 @@ void createObject(unsigned int* codeArray, char* assemblyFileName) {
 
 bool parameterCheck(int line, char* parameters, operation currentOperation, int** labelLines)
 {
-	bool retVal = true;
-	*labelLines[0] = 0;
 	int i;
 	int paramNum = 0;
 	int num = 0;
+	int countNumLengths = 0;
+	bool retVal = true;
 	char* ogParam = parameters;
 	char* og_xParam = ogParam;
-	int countNumLengths = 0;
+	*labelLines[0] = 0;
 	if (currentOperation.operationType == 'R')
 	{
 		if (currentOperation.opcode == 0)
@@ -330,7 +330,7 @@ bool parameterCheck(int line, char* parameters, operation currentOperation, int*
 				printf("Line %d: invalid register defining, no $", line);
 				return false;
 			}
-			for (i = 0; i++; i <= 2)
+			for (i = 0; i <= 2; i++)
 			{
 				if (scanIntAndMove(&parameters, "%d", &num) > 0) paramNum++;
 				if (paramNum > i)
@@ -353,7 +353,7 @@ bool parameterCheck(int line, char* parameters, operation currentOperation, int*
 						return false;
 					}
 					parameters = og_xParam;
-					countNumLengths += numLength(num);
+					countNumLengths += numberLength(num);
 				}
 			}
 			if (paramNum < 3)
@@ -376,7 +376,7 @@ bool parameterCheck(int line, char* parameters, operation currentOperation, int*
 				printf("Line %d: invalid register defining, no $", line);
 				return false;
 			}
-			for (i = 0; i++; i <= 1)
+			for (i = 0; i <= 1; i++)
 			{
 				if (scanIntAndMove(&parameters, "%d", &num) > 0) paramNum++;
 				if (paramNum > i)
@@ -399,7 +399,7 @@ bool parameterCheck(int line, char* parameters, operation currentOperation, int*
 						return false;
 					}
 					parameters = og_xParam;
-					countNumLengths += numLength(num);
+					countNumLengths += numberLength(num);
 				}
 			}
 			if (paramNum < 2)
@@ -427,7 +427,7 @@ bool parameterCheck(int line, char* parameters, operation currentOperation, int*
 				return false;
 			}
 			
-			for (i = 0; i++; i <= 2)
+			for (i = 0; i <= 2; i++)
 			{
 				if (scanIntAndMove(&parameters, "%d", &num) > 0) paramNum++;
 				if (paramNum > i)
@@ -455,7 +455,7 @@ bool parameterCheck(int line, char* parameters, operation currentOperation, int*
 						return false;
 					}
 					parameters = og_xParam;
-					countNumLengths += numLength(num);
+					countNumLengths += numberLength(num);
 				}
 			}
 			if (paramNum < 3)
@@ -472,7 +472,6 @@ bool parameterCheck(int line, char* parameters, operation currentOperation, int*
 			return retVal;
 		}
 		
-		}
 		else 
 		{
 			if(isdigit(parameters[0]))
@@ -481,7 +480,7 @@ bool parameterCheck(int line, char* parameters, operation currentOperation, int*
 				return false;
 			}
 			
-			for (i = 0; i++; i <= 1)
+			for (i = 0; i <= 1; i++)
 			{
 				if (scanIntAndMove(&parameters, "%d", &num) > 0) paramNum++;
 				if (paramNum > i)
@@ -505,7 +504,7 @@ bool parameterCheck(int line, char* parameters, operation currentOperation, int*
 						return false;
 					}
 					parameters = og_xParam;
-					countNumLengths += numLength(num);
+					countNumLengths += numberLength(num);
 				}
 			}
 			if (paramNum < 2)
@@ -527,25 +526,25 @@ bool parameterCheck(int line, char* parameters, operation currentOperation, int*
 					printf("Line %d: invalid char in %s operation parameters", line, currentOperation.operationName);
 					return false;
 				}
-				*labelLines[0]++;
-				if(*labelLInes[0] % 10 == 0)
+				(*labelLines)[0]++;
+				if(*labelLines[0] % 10 == 0)
 				{
 					*labelLines = realloc(*labelLines, *labelLines[0] + 10);
 				}
 				*labelLines[*(labelLines[0])] = line;
 			}
-			return retVal;
 			
 		}
-		
+		return retVal;
 	}
+	
 	if (currentOperation.operationType == 'J') 
 	{
 		if (currentOperation.opcode == 30) 
 		{
 			if(sscanf(parameters, "%d", &num) > 0)
 			{
-				if(!isalpha(ogParam[0]) && opParam[0] != $)
+				if(!isalpha(ogParam[0]) && ogParam[0] != DOLLAR)
 				{
 					printf("Line %d: invalid label or register defining in %s operation", line, currentOperation.operationName);
 					return false;
@@ -561,7 +560,7 @@ bool parameterCheck(int line, char* parameters, operation currentOperation, int*
 				else
 				{
 					*labelLines[0]++;
-					if(*labelLInes[0] % 10 == 0)
+					if(*labelLines[0] % 10 == 0)
 					{
 						*labelLines = realloc(*labelLines, *labelLines[0] + 10); /*could be a function*/
 					}
@@ -579,7 +578,7 @@ bool parameterCheck(int line, char* parameters, operation currentOperation, int*
 				else
 				{
 					*labelLines[0]++;
-					if(*labelLInes[0] % 10 == 0)
+					if(*labelLines[0] % 10 == 0)
 					{
 						*labelLines = realloc(*labelLines, *labelLines[0] + 10);
 					}
@@ -598,7 +597,7 @@ bool parameterCheck(int line, char* parameters, operation currentOperation, int*
 			else
 			{
 				*labelLines[0]++;
-				if(*labelLInes[0] % 10 == 0)
+				if(*labelLines[0] % 10 == 0)
 				{
 					*labelLines = realloc(*labelLines, *labelLines[0] + 10);
 				}
@@ -616,7 +615,7 @@ bool parameterCheck(int line, char* parameters, operation currentOperation, int*
 	}
 	return retVal;
 }
-
+/*
 void createEnt(label* labels, char* fileName) 
 {
 
@@ -625,4 +624,4 @@ void createEnt(label* labels, char* fileName)
 void createExt(label* labels, char* fileName) 
 {
 
-}
+}*/
