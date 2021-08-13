@@ -6,6 +6,8 @@
 #include <math.h>
 #define numOfOperations 27
 #define numOfGuidanceWords 6
+#define DOLLAR '$'
+#define COMMA ','
 
 typedef struct  
 {
