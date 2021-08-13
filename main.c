@@ -40,8 +40,7 @@ int main(int argc, char *argv[])
 	int* labelLines = malloc(40);
 	int IC = 100;
 	int DC = 0;
-	int x ;
-	char* kaki = "$3,$5,$9";
+	int x;
 	FILE* fp = NULL;
 	bool firstPassSuccessful = false;
 	labelLines[0] = 0;

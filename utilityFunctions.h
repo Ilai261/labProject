@@ -14,3 +14,4 @@ bool fileApproved(char* fileName);
 void writeToBits(unsigned int* placeToWrite, int startBit, int endBit, int data);
 bool parameterCheck(int line, char* parameters, operation currentOperation, int** labelLines);
 void operationLabelCode(operation currentOperation, char* parameters, unsigned int* codeArray, int lineIdx, label* labels, int labelCount);
+int moveAndScanInt(char** readString, char* formatString, int* writeInt);

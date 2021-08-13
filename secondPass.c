@@ -15,6 +15,7 @@ void secondPass(FILE* fp, label* labels, int labelCount, unsigned int* codeArray
 	char* opName;
 	char labelName[32];
 	int i = 0;
+	operation currentOperation;
 
 	for (i = 0; i < labelCount; i++) {
 		if (labels[i].isData) {
@@ -43,7 +44,7 @@ void secondPass(FILE* fp, label* labels, int labelCount, unsigned int* codeArray
 
 		opName = opScanStr;
 
-		operation currentOperation = operations[operationNum(operations, opName)];
+		currentOperation = operations[operationNum(operations, opName)];
 		while (scanStrAndMove(&lineStr, "%s", temp) > 0) {
 			strcat(parameters, temp);
 		}
