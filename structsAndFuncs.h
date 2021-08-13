@@ -32,6 +32,6 @@ typedef struct
 
 int firstPass(FILE* fp, label** labels, unsigned char** dataArray, unsigned int** codeArray, int* IC, int* DC, operation* operations, int** labelLines);
 void secondPass(FILE* fp, label* labels, int labelCount, unsigned int* codeArray, int* IC, int* DC, operation* operations, int* labelLines);
-void createObject(unsigned int* codeArray, char* fileName);
+void createObject(unsigned int* codeArray, unsigned char* dataArray,int IC,int DC, char* assemblyFileName);
+void createEnt(label* labels, int labelCount,  char* assemblyFileName);
 void createExt(label*, char* fileName);
-void createEnt(label*, char* fileName);

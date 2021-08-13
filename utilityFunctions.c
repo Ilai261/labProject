@@ -301,26 +301,6 @@ char* getFileName(char* fileName) {/*will work in linux*/
 	return retval;
 	
 }
-void createObject(unsigned int* codeArray, unsigned char* dataArray,int IC,int DC, char* assemblyFileName) {
-	FILE* fp;
-	char* fileName = getFileName(assemblyFileName);
-	strcat(fileName, ".ob");
-	fp = fopen(fileName, "w");
-	fprintf(fp, "	%d %d", IC - 100, DC);
-	int byteCount = 0;
-	while (byteCount < IC - 100) {
-		if (byteCount % 4 == 0) fprintf(fp, "\n%04d ", byteCount + 100);
-		fprintf(fp, "%x ", ((char*)codeArray)[byteCount]);
-		byteCount++;
-	}
-	while (byteCount < IC - 100 + DC) {
-		if (byteCount % 4 == 0) fprintf(fp, "\n%04d ", byteCount + 100);
-		fprintf(fp, "%x ", dataArray[byteCount-IC + 100]);
-	}
-	fclose(fp);
-	free(assemblyFileName);
-	printf("created");
-}
 
 bool parameterCheck(int line, char* parameters, operation currentOperation, int** labelLines)
 {
@@ -693,13 +673,36 @@ int moveAndScanInt(char** readString, char* formatString, int* writeInt) {
 	return retVal;
 }
 
+void createObject(unsigned int* codeArray, unsigned char* dataArray,int IC,int DC, char* assemblyFileName) {
+	FILE* fp;
+	int byteCount = 0;
+	char* fileName = getFileName(assemblyFileName);
+	strcat(fileName, ".ob");
+	fp = fopen(fileName, "w");
+	fprintf(fp, "	%d %d", IC - 100, DC);
+	while (byteCount < IC - 100) {
+		if (byteCount % 4 == 0) fprintf(fp, "\n%04d ", byteCount + 100);
+		fprintf(fp, "%x ", ((char*)codeArray)[byteCount]);
+		byteCount++;
+	}
+	while (byteCount < IC - 100 + DC) {
+		if (byteCount % 4 == 0) fprintf(fp, "\n%04d ", byteCount + 100);
+		fprintf(fp, "%x ", dataArray[byteCount-IC + 100]);
+		byteCount++;
+	}
+	fclose(fp);
+	free(assemblyFileName);
+	printf("created");
+}
+
+
 void createEnt(label* labels, int labelCount,  char* assemblyFileName)
 {
 	FILE* fp;
+	int i = 0;
 	char* fileName = getFileName(assemblyFileName);
 	strcat(fileName, ".ent");
 	fp = fopen(fileName, "w");
-	int i = 0;
 	for (i = 0; i < labelCount; i++) {
 		if (labels[i].isEntry) {
 			fprintf(fp, "%s ", labels[i].symbol);

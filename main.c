@@ -60,9 +60,9 @@ int main(int argc, char *argv[])
 		if(firstPassSuccessful == true)
 		{
 			secondPass(fp,labels,labelCount,codeArray, &IC, &DC, operations, labelLines);
-			createObject(codeArray, fileName);
+			createObject(codeArray, dataArray, IC, DC, fileName);
 			/*createExt(labels,  fileName);*/
-			createEnt(labels, fileName);
+			createEnt(labels, labelCount, fileName);
 		}
 		
 		fclose(fp);
