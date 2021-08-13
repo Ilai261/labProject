@@ -61,8 +61,8 @@ int main(int argc, char *argv[])
 		{
 			secondPass(fp,labels,labelCount,codeArray, &IC, &DC, operations, labelLines);
 			createObject(codeArray, fileName);
-			/*createExt(labels,  fileName);
-			createEnt(labels, fileName);*/
+			/*createExt(labels,  fileName);*/
+			createEnt(labels, fileName);
 		}
 		
 		fclose(fp);

@@ -301,11 +301,22 @@ char* getFileName(char* fileName) {/*will work in linux*/
 	return retval;
 	
 }
-void createObject(unsigned int* codeArray, char* assemblyFileName) {
+void createObject(unsigned int* codeArray, unsigned char* dataArray,int IC,int DC, char* assemblyFileName) {
 	FILE* fp;
 	char* fileName = getFileName(assemblyFileName);
 	strcat(fileName, ".ob");
 	fp = fopen(fileName, "w");
+	fprintf(fp, "	%d %d", IC - 100, DC);
+	int byteCount = 0;
+	while (byteCount < IC - 100) {
+		if (byteCount % 4 == 0) fprintf(fp, "\n%04d ", byteCount + 100);
+		fprintf(fp, "%x ", ((char*)codeArray)[byteCount]);
+		byteCount++;
+	}
+	while (byteCount < IC - 100 + DC) {
+		if (byteCount % 4 == 0) fprintf(fp, "\n%04d ", byteCount + 100);
+		fprintf(fp, "%x ", dataArray[byteCount-IC + 100]);
+	}
 	fclose(fp);
 	free(assemblyFileName);
 	printf("created");
@@ -681,13 +692,24 @@ int moveAndScanInt(char** readString, char* formatString, int* writeInt) {
 	if (retVal > 0) *readString += forwardBy;
 	return retVal;
 }
-/*
-void createEnt(label* labels, char* fileName) 
+
+void createEnt(label* labels, int labelCount,  char* assemblyFileName)
 {
+	FILE* fp;
+	char* fileName = getFileName(assemblyFileName);
+	strcat(fileName, ".ent");
+	fp = fopen(fileName, "w");
+	int i = 0;
+	for (i = 0; i < labelCount; i++) {
+		if (labels[i].isEntry) {
+			fprintf(fp, "%s ", labels[i].symbol);
+			fprintf(fp, "%04d\n", labels[i].address);
+		}
 
+	}
 }
-
-void createExt(label* labels, char* fileName) 
+/*
+void createExt(label* labels, int labelCount, char* fileName)
 {
 
 }*/
