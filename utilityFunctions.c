@@ -61,7 +61,7 @@ int labelNum(label* labels,int labelCount, char* string){
 }
 
 int isGuidance(char* string){
-	char *guidanceWords[numOfGuidanceWords] = {"db","dw","dh","asciz","entry","extern"};
+	char *guidanceWords[numOfGuidanceWords] = {"db","dh","dw","asciz","entry","extern"};
 	int i;
 	 for(i = 0; i < numOfGuidanceWords; i++)
 	{
@@ -79,12 +79,12 @@ void writeDataFromGuidance(int guidanceNum,unsigned char** dataArray,int *DC,cha
 		int num = 0u;
 		*dataArray = realloc(*dataArray,*DC+40);
 		
-		if(scanIntAndMove(&dataString,"%hhd", &num) > 0) 
+		if(moveAndScanInt(&dataString,"%hhd", &num) > 0)
 		{
 			(*dataArray)[*DC+i] = num;
 			i++;
 		}
-		while(scanIntAndMove(&dataString,",%hhd", &num) > 0){
+		while(moveAndScanInt(&dataString,"%hhd", &num) > 0){
 			(*dataArray)[*DC+i] = num;
 			i++;
 		}
@@ -95,11 +95,11 @@ void writeDataFromGuidance(int guidanceNum,unsigned char** dataArray,int *DC,cha
 		int num = 0u;
 		*dataArray = realloc(*dataArray,*DC+80);
 		
-		if(scanIntAndMove(&dataString,"%hd", &num) > 0) {
+		if(moveAndScanInt(&dataString,"%hd", &num) > 0) {
 			(*dataArray)[*DC+i] = num;
 			i +=2;
 		}
-		while(scanIntAndMove(&dataString,",%hd", &num) > 0){
+		while(moveAndScanInt(&dataString,"%hd", &num) > 0){
 			(*dataArray)[*DC+i] = num;
 			i +=2;
 		}
@@ -110,11 +110,11 @@ void writeDataFromGuidance(int guidanceNum,unsigned char** dataArray,int *DC,cha
 		int  num;
 		*dataArray = realloc(*dataArray,*DC+160);
 		
-		if(scanIntAndMove(&dataString,"%d", (int*)&num) > 0) {
+		if(moveAndScanInt(&dataString,"%d", (int*)&num) > 0) {
 			(*dataArray)[*DC+i] = num;
 			i += 4;
 		}
-		while(scanIntAndMove(&dataString,",%d", (int*)&num) > 0){
+		while(moveAndScanInt(&dataString,"%d", (int*)&num) > 0){
 			(*dataArray)[*DC+i] = num;
 			i += 4;
 		}
@@ -124,11 +124,15 @@ void writeDataFromGuidance(int guidanceNum,unsigned char** dataArray,int *DC,cha
 		int i;
 		int sLength;
 		sLength = strlen(dataString);
-		*dataArray = realloc(*dataArray,*DC+sLength);
-		 for(i = 1; i< sLength - 1; i++){
-			(*dataArray)[*DC+i] = dataString[i];
-		 }
-		 *DC += sLength;
+		if (sLength > 1) {
+			dataString[sLength - 1] = '\0';
+			dataString++;
+			*dataArray = realloc(*dataArray, *DC + sLength);
+			for (i = 0; i < sLength - 1; i++) {
+				(*dataArray)[*DC + i] = dataString[i];
+			}
+			*DC += sLength - 1;
+		}
 	}
 }
 int operationCode(operation currentOperation, char* parameters){
@@ -164,8 +168,7 @@ int operationCode(operation currentOperation, char* parameters){
 			int paramArray[2];
 			short int immed = 0;
 			if (sscanf(parameters, "$%d,%hd,$%d", &paramArray[0], &immed, &paramArray[1]) > 0) {
-				writeToBits(&retVal, 15, 15, (immed > 0)? 1 : 0);
-				writeToBits(&retVal, 0, 14, abs(immed));
+				writeToBits(&retVal, 0, 15, immed);
 				writeToBits(&retVal, 16, 20, paramArray[1]);
 				writeToBits(&retVal, 21, 25, paramArray[0]);
 				writeToBits(&retVal, 26, 31, currentOperation.opcode);
@@ -187,8 +190,7 @@ int operationCode(operation currentOperation, char* parameters){
 			int paramArray[2];
 			short int immed = 0;
 			if (sscanf(parameters, "$%d,%hd,$%d", &paramArray[0], &immed, &paramArray[1]) > 0) {
-				writeToBits(&retVal, 15, 15, (immed > 0) ? 1 : 0);
-				writeToBits(&retVal, 0, 14, abs(immed));
+				writeToBits(&retVal, 0, 15, immed);
 				writeToBits(&retVal, 16, 20, paramArray[1]);
 				writeToBits(&retVal, 21, 25, paramArray[0]);
 				writeToBits(&retVal, 26, 31, currentOperation.opcode);
@@ -224,7 +226,7 @@ void writeToBits(unsigned int * placeToWrite,int startBit, int endBit, int data)
 {
 	unsigned int mask = intPow(2,32) - 1;
 	mask -= intPow(2,endBit + 1) - 1;
-	mask += intPow(2,startBit + 1) - 1;
+	mask += intPow(2,startBit) - 1;
 	*placeToWrite &= mask;
 	*placeToWrite  |= data << startBit;
 	
@@ -302,7 +304,7 @@ char* getFileName(char* fileName) {/*will work in linux*/
 	
 }
 
-bool parameterCheck(int line, char* parameters, operation currentOperation, int** labelLines)
+bool parameterCheck(int line,int IC, char* parameters, operation currentOperation, int** labelLines)
 {
 	int i;
 	int paramNum = 0;
@@ -525,7 +527,7 @@ bool parameterCheck(int line, char* parameters, operation currentOperation, int*
 				{
 					*labelLines = realloc(*labelLines, (*labelLines)[0] + 40);
 				}
-				(*labelLines)[(*labelLines)[0]] = line;
+				(*labelLines)[(*labelLines)[0]] = IC;
 			}
 			
 		}
@@ -558,7 +560,7 @@ bool parameterCheck(int line, char* parameters, operation currentOperation, int*
 					{
 						*labelLines = realloc(*labelLines, *labelLines[0] + 10); /*could be a function*/
 					}
-					(*labelLines)[**labelLines] = line;
+					(*labelLines)[**labelLines] = IC;
 				}
 				
 			}
@@ -576,7 +578,7 @@ bool parameterCheck(int line, char* parameters, operation currentOperation, int*
 					{
 						*labelLines = realloc(*labelLines, (*labelLines)[0] + 40);
 					}
-					(*labelLines)[(*labelLines)[0]] = line;
+					(*labelLines)[(*labelLines)[0]] = IC;
 				}
 			}
 			return retVal;
@@ -595,7 +597,7 @@ bool parameterCheck(int line, char* parameters, operation currentOperation, int*
 				{
 					*labelLines = realloc(*labelLines, (*labelLines)[0] + 40);
 				}
-				(*labelLines)[(*labelLines)[0]] = line;
+				(*labelLines)[(*labelLines)[0]] = IC;
 				return true;
 			}
 		}
@@ -611,29 +613,31 @@ bool parameterCheck(int line, char* parameters, operation currentOperation, int*
 	return retVal;
 }
 
-void operationLabelCode(operation currentOperation, char* parameters, unsigned int* codeArray, int lineNum, label* labels, int labelCount) {
+int operationLabelCode(operation currentOperation, char* parameters, unsigned int* codeArray,int lineNum ,int IC, label* labels, int labelCount) {
 	label paramLabel;
+	int opPos = (IC - 100) / 4;
 	int labelNumber;
 	if (currentOperation.operationType == 'J') {
 		if (currentOperation.opcode == 30) {
 			int regNum = 0;
 			if (sscanf(parameters, "$%d", &regNum) > 0) {
-				return;
+				return 0;
 			}
 			else {
 				labelNumber = labelNum(labels, labelCount, parameters);
 				if (labelNumber == -1) printf("Line %d: unknown label used as a parameter for J operation\n", lineNum);
 				paramLabel = labels[labelNumber];
-				writeToBits(&codeArray[lineNum], 0, 24, paramLabel.address);
+				writeToBits(&codeArray[opPos], 0, 24, paramLabel.address);
+				return 1;
 			}
-			return;
+			
 		}
 		if (currentOperation.opcode <= 32) {
 			labelNumber = labelNum(labels, labelCount, parameters);
 			if (labelNumber == -1) printf("Line %d: unknown label used as a parameter for J operation\n", lineNum);
 			paramLabel = labels[labelNumber];
-			writeToBits(&codeArray[lineNum], 0, 24, paramLabel.address);
-			return;
+			writeToBits(&codeArray[opPos], 0, 24, paramLabel.address);
+			return 1;
 		}
 	}
 	if (currentOperation.operationType == 'I') {
@@ -649,20 +653,20 @@ void operationLabelCode(operation currentOperation, char* parameters, unsigned i
 			paramLabel = labels[labelNumber];
 			if (paramLabel.isExternal) {
 				printf("Line %d: external label cannot be used as a parameter for I operation\n", lineNum);
-				return;
+				return 0;
 			}
 			distanceToLabel = paramLabel.address - 100 -lineNum * 4;
-			writeToBits(&codeArray[lineNum], 15, 15, (distanceToLabel > 0) ? 1 : 0);
-			writeToBits(&codeArray[lineNum], 0, 14, abs(distanceToLabel));
-			return;
+			writeToBits(&codeArray[opPos], 0, 15, distanceToLabel);
+			return 1;
 		}
 	}
+	return 0;
 }
 
 int moveAndScanInt(char** readString, char* formatString, int* writeInt) {
 	int retVal;
 	int forwardBy = 0;
-	while ((*readString)[forwardBy] != '\0' && !isdigit((*readString)[forwardBy])) {
+	while ((*readString)[forwardBy] != '\0' && !isdigit((*readString)[forwardBy]) && (*readString)[forwardBy] != '-' && (*readString)[forwardBy] != '+') {
 		forwardBy++;
 	}
 	*readString += forwardBy;
@@ -677,22 +681,22 @@ void createObject(unsigned int* codeArray, unsigned char* dataArray,int IC,int D
 	FILE* fp;
 	int byteCount = 0;
 	char* fileName = getFileName(assemblyFileName);
-	strcat(fileName, ".ob");
-	fp = fopen(fileName, "w");
-	fprintf(fp, "	%d %d", IC - 100, DC);
+	/*strcat(fileName, ".ob");
+	fp = fopen(fileName, "w");*/
+	printf("	%d %d", IC - 100, DC);
 	while (byteCount < IC - 100) {
-		if (byteCount % 4 == 0) fprintf(fp, "\n%04d ", byteCount + 100);
-		fprintf(fp, "%x ", ((char*)codeArray)[byteCount]);
+		if (byteCount % 4 == 0) printf( "\n%04d ", byteCount + 100);
+		printf("%02x ", ((unsigned char*)codeArray)[byteCount]);
 		byteCount++;
 	}
 	while (byteCount < IC - 100 + DC) {
-		if (byteCount % 4 == 0) fprintf(fp, "\n%04d ", byteCount + 100);
-		fprintf(fp, "%x ", dataArray[byteCount-IC + 100]);
+		if (byteCount % 4 == 0) printf( "\n%04d ", byteCount + 100);
+		printf("%02x ", dataArray[byteCount-IC + 100]);
 		byteCount++;
 	}
-	fclose(fp);
+	/*fclose(fp);
 	free(assemblyFileName);
-	printf("created");
+	printf("created");*/
 }
 
 
@@ -701,12 +705,13 @@ void createEnt(label* labels, int labelCount,  char* assemblyFileName)
 	FILE* fp;
 	int i = 0;
 	char* fileName = getFileName(assemblyFileName);
-	strcat(fileName, ".ent");
-	fp = fopen(fileName, "w");
+	printf( "\n\n\n ");
+	/*strcat(fileName, ".ent");
+	fp = fopen(fileName, "w");*/
 	for (i = 0; i < labelCount; i++) {
 		if (labels[i].isEntry) {
-			fprintf(fp, "%s ", labels[i].symbol);
-			fprintf(fp, "%04d\n", labels[i].address);
+			printf("%s ", labels[i].symbol);
+			printf("%04d\n", labels[i].address);
 		}
 
 	}
