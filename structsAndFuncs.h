@@ -30,8 +30,8 @@ typedef struct
 
 
 
-int firstPass(FILE* fp,label** labels,unsigned char** dataArray,unsigned int** codeArray, int* IC, int* DC, operation* operations);
-void secondPass(FILE * fp,label * labels, int labelCount ,unsigned int* dataArray, int* IC, int* DC,operation* operations);
+int firstPass(FILE* fp, label** labels, unsigned char** dataArray, unsigned int** codeArray, int* IC, int* DC, operation* operations, int** labelLines);
+void secondPass(FILE* fp, label* labels, int labelCount, unsigned int* codeArray, int* IC, int* DC, operation* operations, int* labelLines);
 void createObject(unsigned int* codeArray, char* fileName);
 void createExt(label*, char* fileName);
 void createEnt(label*, char* fileName);

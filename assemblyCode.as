@@ -5,7 +5,7 @@ jmp Next
 Next: move $20,$4
 bgt $4,$2,END
 la K
-sw $0,4.$10
+sw $0,4,$10
 bne $31,$9,LOOP
 call val1
 jmp $4

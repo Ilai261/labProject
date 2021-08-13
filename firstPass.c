@@ -1,7 +1,7 @@
 /* This is the file that runs the first pass function of the assembler */
 #include "utilityFunctions.h"
 
-int firstPass(FILE* fp, label** labels, unsigned char** dataArray, unsigned int** codeArray, int* IC, int* DC, operation* operations)
+int firstPass(FILE* fp, label** labels, unsigned char** dataArray, unsigned int** codeArray, int* IC, int* DC, operation* operations, int ** labelLines)
 {
 	char* line = malloc(81);
 	char* ogLine = line;
@@ -29,7 +29,7 @@ int firstPass(FILE* fp, label** labels, unsigned char** dataArray, unsigned int*
 			}
 			else
 			{
-				printf("Line %d: more than 80 characters in line", lineCount);
+				printf("Line %d: more than 80 characters in line\n", lineCount);
 				isSuccessful = false;
 
 			}
@@ -124,6 +124,7 @@ int firstPass(FILE* fp, label** labels, unsigned char** dataArray, unsigned int*
 							char  externName[32];
 							scanStrAndMove(&line, "%s", externName);
 							if (checkLabel(externName, *labels, labelCount, operations, lineCount)) {
+								labelCount++;
 								if (labelCount % 10 == 0) {
 									*labels = (label*)realloc((*labels), sizeof(label) * (labelCount + 10));
 								}
@@ -132,7 +133,6 @@ int firstPass(FILE* fp, label** labels, unsigned char** dataArray, unsigned int*
 								strcat(labelToAdd.symbol, externName);
 								(*labels)[labelCount - 1] = labelToAdd;
 								if (isLabel) printf("Line %d: label before extern is meaningless", lineCount);
-								labelCount++;
 							}
 
 						}
@@ -164,9 +164,10 @@ int firstPass(FILE* fp, label** labels, unsigned char** dataArray, unsigned int*
 					if (codeByte % 40 == 0) {
 						*codeArray = realloc((*codeArray), codeByte + 40);
 					}
-
-					(*codeArray)[codeByte / 4] = operationCode(currentOperation, parameters);
-					*IC += 4;
+					if (parameterCheck( lineCount, parameters, currentOperation, labelLines)) {
+						(*codeArray)[codeByte / 4] = operationCode(currentOperation, parameters);
+						*IC += 4;
+					}
 
 				}
 				if (isLabel) {

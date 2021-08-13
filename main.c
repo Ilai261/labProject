@@ -37,29 +37,33 @@ int main(int argc, char *argv[])
 	int labelCount = 0;
 	unsigned int* codeArray = malloc(10);
 	unsigned char* dataArray = malloc(10);
+	int* labelLines = malloc(40);
 	int IC = 100;
 	int DC = 0;
 	int x ;
+	char* kaki = "$3,$5,$9";
 	FILE* fp = NULL;
 	bool firstPassSuccessful = false;
+	labelLines[0] = 0;
 	printf("NHKSD\n\nBUGO\n\n");
 	for (x = 1; x < argc; x++){
 		char* fileName = argv[x];
 		fp = fopen(fileName, "r");
 		if(!fileApproved(fileName) || fp == NULL)
 		{
-			printf("Error, couldn't open file %s", fileName);
+			printf("Error, couldn't open file %s\n", fileName);
 			continue;
 		}
-		labelCount = firstPass(fp,&labels,&dataArray, &codeArray, &IC, &DC, operations);
+		labelCount = firstPass(fp,&labels,&dataArray, &codeArray, &IC, &DC, operations,&labelLines);
 		firstPassSuccessful = labelCount >= 0;
-		
+		fclose(fp);
+		fp = fopen(fileName, "r");
 		if(firstPassSuccessful == true)
 		{
-			secondPass(fp,labels,labelCount,codeArray, &IC, &DC, operations);
+			secondPass(fp,labels,labelCount,codeArray, &IC, &DC, operations, labelLines);
 			createObject(codeArray, fileName);
-			createExt(labels,  fileName);
-			createEnt(labels, fileName);
+			/*createExt(labels,  fileName);
+			createEnt(labels, fileName);*/
 		}
 		
 		fclose(fp);
