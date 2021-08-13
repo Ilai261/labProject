@@ -1,7 +1,8 @@
 /* This is the file that runs the second pass function of the assembler */
 
 #include "utilityFunctions.h"
-void secondPass(FILE* fp, label* labels, int labelCount, unsigned int* dataArray, int* IC, int* DC, operation* operations, int* labelLines)
+void operationLabelCode(operation currentOperation, char* parameters, unsigned int* codeArray, int lineIdx, label* labels, int labelCount);
+void secondPass(FILE* fp, label* labels, int labelCount, unsigned int* codeArray, int* IC, int* DC, operation* operations, int* labelLines)
 {
 	int numOfLabelLines = labelLines[0];
 	int thisLine = 0;
@@ -17,7 +18,7 @@ void secondPass(FILE* fp, label* labels, int labelCount, unsigned int* dataArray
 
 	for (i = 0; i < labelCount; i++) {
 		if (labels[i].isData) {
-			labels[i].address += *IC + 100;
+			labels[i].address += *IC;
 		}
 	}
 
@@ -27,7 +28,7 @@ void secondPass(FILE* fp, label* labels, int labelCount, unsigned int* dataArray
 			fgets(oglineStr, 80, fp);
 			lineStr = oglineStr;
 			scanStrAndMove(&lineStr, "%s", opScanStr);
-			if (strcmp(opName, ".entry") == 0) {
+			if (strcmp(opScanStr, ".entry") == 0) {
 				scanStrAndMove(&lineStr, "%s", labelName);
 				labels[labelNum(labels, labelCount, labelName)].isEntry = true;
 			}
@@ -45,33 +46,51 @@ void secondPass(FILE* fp, label* labels, int labelCount, unsigned int* dataArray
 		while (scanStrAndMove(&lineStr, "%s", temp) > 0) {
 			strcat(parameters, temp);
 		}
-		
+		operationLabelCode(currentOperation, parameters, codeArray, lineIdx, labels, labelCount);
 		
 	}
 }
-void operationLabelCode(operation currentOperation, char* parameters, unsigned int* dataArray,int lineIdx, label* labels, int labelCount) {
+void operationLabelCode(operation currentOperation, char* parameters, unsigned int* codeArray,int lineIdx, label* labels, int labelCount) {
+	label paramLabel;
+	int labelNumber;
 	if (currentOperation.operationType == 'J') {
-		label paramLabel;
 		if (currentOperation.opcode == 30) {
 			int regNum = 0;
 			if (sscanf(parameters, "$%d", &regNum) > 0) {
 				return;
 			}
 			else {
-				paramLabel = labels[labelNum(labels, labelCount, parameters)];
-				writeToBits(&dataArray[lineIdx*4], 0, 24, 0);
+				labelNumber = labelNum(labels, labelCount, parameters);
+				if (labelNumber == -1) printf("Line %d: unknown labe lused as a parameter for J operation ", lineIdx);
+				paramLabel = labels[labelNumber];
+				writeToBits(&codeArray[lineIdx], 0, 24, paramLabel.address);
 			}
 		}
 		if (currentOperation.opcode <= 32) {
-			paramLabel = labels[labelNum(labels, labelCount, parameters)];
-			writeToBits(&dataArray[lineIdx * 4], 0, 24, 0);
+			labelNumber = labelNum(labels, labelCount, parameters);
+			if(labelNumber == -1) printf("Line %d: unknown labe lused as a parameter for J operation ", lineIdx);
+			paramLabel = labels[labelNumber];
+			writeToBits(&codeArray[lineIdx], 0, 24, paramLabel.address);
 		}
-
-
-
-
-
-
-
-
+	}
+	if (currentOperation.operationType == 'I') {
+		if (currentOperation.opcode < 19) {
+			int commaCounter = 0;
+			int distanceToLabel;
+			while (commaCounter < 2) {
+				if (*parameters == COMMA) commaCounter++;
+				parameters++;
+			}
+			labelNumber = labelNum(labels, labelCount, parameters);
+			if (labelNumber == -1) printf("Line %d: unknown labe lused as a parameter for I operation ", lineIdx);
+			paramLabel = labels[labelNumber];
+			if (paramLabel.isExternal) {
+				printf("Line %d: external label cannot be used as a parameter for I operation", lineIdx);
+				return;
+			}
+			distanceToLabel = paramLabel.address - lineIdx * 4;
+			writeToBits(&codeArray[lineIdx], 15, 15, (distanceToLabel > 0) ? 1 : 0);
+			writeToBits(&codeArray[lineIdx], 0, 14, abs(distanceToLabel));
+		}
+	}
 }

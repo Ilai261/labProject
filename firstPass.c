@@ -29,7 +29,7 @@ int firstPass(FILE* fp, label** labels, unsigned char** dataArray, unsigned int*
 			}
 			else
 			{
-				printf("Line %d: more than 80 characters in line", *(IC)-100);
+				printf("Line %d: more than 80 characters in line", lineCount);
 				isSuccessful = false;
 
 			}
