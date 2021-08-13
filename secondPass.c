@@ -50,8 +50,7 @@ void secondPass(FILE* fp, label* labels, int labelCount, unsigned int* codeArray
 		operationLabelCode(currentOperation, parameters, codeArray, thisLine, labels, labelCount);
 		
 	}
-	while (true) {
-		if (fgets(oglineStr, 80, fp) == NULL) break;
+	while (fgets(oglineStr, 80, fp) == NULL) {
 		lineStr = oglineStr;
 		scanStrAndMove(&lineStr, "%s", opScanStr);
 		if (strcmp(opScanStr, ".entry") == 0) {
