@@ -814,12 +814,8 @@ void createObject(unsigned int* codeArray, unsigned char* dataArray,int IC,int D
 	FILE* fp;
 	int byteCount = 0;
 	char* fileName = getFileName(assemblyFileName);
-	printf("getfile\n");
 	strcat(fileName, ".ob");
-	printf("cat\n");
-	fp = fopen(fileName, "w");
-	if(fp == NULL) printf("null kaki\n");
-	printf("openfile\n");
+	fp = fopen(fileName, "w"); /*change to if != NULL sussy*/
 	fprintf(fp, "	%d %d", IC - 100, DC);
 	while (byteCount < IC - 100) {
 		if (byteCount % 4 == 0) fprintf(fp, "\n%04d ", byteCount + 100);

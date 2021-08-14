@@ -60,16 +60,11 @@ int main(int argc, char *argv[])
 		if (firstPassSuccessful == true)
 		{
 			int extArrayLength = 0;
-						extUse* extArray = calloc(JOpCounter, sizeof(extUse));
-			printf("firstPass\n");
+			extUse* extArray = calloc(JOpCounter, sizeof(extUse));
 			if (secondPass(fp, labels, labelCount, codeArray, &IC, &DC, extArray, &extArrayLength, operations, labelLines)) {
-				printf("secondPass\n");
 				createObject(codeArray, dataArray, IC, DC, fileName);
-				printf("object\n");
 				createEnt(labels, labelCount, fileName);
-				printf("ent\n");
 				createExt(extArray, extArrayLength, fileName);
-				printf("ext\n");
 			}
 			free(labelLines);
 			free(codeArray);
