@@ -158,7 +158,7 @@ int firstPass(FILE* fp, label** labels, unsigned char** dataArray, unsigned int*
 					}
 
 					currentOperation = operations[operationNumber];
-					if (currentOperation.operationType == 'J') *JOpCounter++;
+					if (currentOperation.operationType == 'J') (*JOpCounter)++;
 					while (scanStrAndMove(&line, "%s", temp) > 0) {
 						strcat(parameters, temp);
 					}
@@ -185,7 +185,10 @@ int firstPass(FILE* fp, label** labels, unsigned char** dataArray, unsigned int*
 				isNewLine = true;
 				/*sscanf for an operation word*/
 			}
-
+			/*else
+			{
+				lineCount++;
+			}*/
 		}
 		if (c == EOF)break;
 	}

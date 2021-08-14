@@ -815,20 +815,19 @@ void createObject(unsigned int* codeArray, unsigned char* dataArray,int IC,int D
 	char* fileName = getFileName(assemblyFileName);
 	strcat(fileName, ".ob");
 	fp = fopen(fileName, "w");
-	printf("	%d %d", IC - 100, DC);
+	fprintf(fp, "	%d %d", IC - 100, DC);
 	while (byteCount < IC - 100) {
-		if (byteCount % 4 == 0) fprintf( "\n%04d ", byteCount + 100);
+		if (byteCount % 4 == 0) fprintf(fp, "\n%04d ", byteCount + 100);
 		fprintf(fp,"%02X ", ((unsigned char*)codeArray)[byteCount]);
 		byteCount++;
 	}
 	while (byteCount < IC - 100 + DC) {
-		if (byteCount % 4 == 0) fprintf( "\n%04d ", byteCount + 100);
+		if (byteCount % 4 == 0) fprintf(fp, "\n%04d ", byteCount + 100);
 		fprintf(fp,"%02X ", dataArray[byteCount-IC + 100]);
 		byteCount++;
 	}
 	fclose(fp);
 	free(assemblyFileName);
-	printf("created");
 }
 
 

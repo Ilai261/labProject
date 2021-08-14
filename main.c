@@ -43,8 +43,8 @@ int main(int argc, char *argv[])
 	int x;
 	FILE* fp = NULL;
 	bool firstPassSuccessful = false;
-	labelLines[0] = 0;
 	int JOpCounter = 0;
+	labelLines[0] = 0;
 	for (x = 1; x < argc; x++){
 		char* fileName = argv[x];
 		fp = fopen(fileName, "r");
@@ -63,8 +63,8 @@ int main(int argc, char *argv[])
 			int extArrayLength = 0;
 			if (secondPass(fp, labels, labelCount, codeArray, &IC, &DC, extArray, &extArrayLength, operations, labelLines)) {
 				createObject(codeArray, dataArray, IC, DC, fileName);
-				createExt(extArray, extArrayLength, fileName);
 				createEnt(labels, labelCount, fileName);
+				createExt(extArray, extArrayLength, fileName);
 			}
 		}
 		fclose(fp);
