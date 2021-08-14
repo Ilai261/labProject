@@ -279,9 +279,10 @@ bool fileApproved(char* fileName) {
 	printf("dood not approve\n");
 	return false;
 }
-char* getFileName(char* fileName) {/*will work in linux*/
+char* getFileName(char* fileName) 
+{
 	int i = 0;
-	char* retval = (char*)malloc(100);
+	char* retval = (char*)calloc(100, 1);
 	strcpy(retval, fileName);
 	while (retval[i] != '\0') i++;
 
@@ -813,8 +814,12 @@ void createObject(unsigned int* codeArray, unsigned char* dataArray,int IC,int D
 	FILE* fp;
 	int byteCount = 0;
 	char* fileName = getFileName(assemblyFileName);
+	printf("getfile\n");
 	strcat(fileName, ".ob");
+	printf("cat\n");
 	fp = fopen(fileName, "w");
+	if(fp == NULL) printf("null kaki\n");
+	printf("openfile\n");
 	fprintf(fp, "	%d %d", IC - 100, DC);
 	while (byteCount < IC - 100) {
 		if (byteCount % 4 == 0) fprintf(fp, "\n%04d ", byteCount + 100);
@@ -827,7 +832,7 @@ void createObject(unsigned int* codeArray, unsigned char* dataArray,int IC,int D
 		byteCount++;
 	}
 	fclose(fp);
-	free(assemblyFileName);
+	free(fileName);
 }
 
 
@@ -844,7 +849,8 @@ void createEnt(label* labels, int labelCount,  char* assemblyFileName)
 			fprintf(fp,"%04d\n", labels[i].address);
 		}
 	}
-	free(assemblyFileName);
+	free(fileName);
+	fclose(fp);
 }
 void createExt(extUse* extArray, int extArrayLength, char* assemblyFileName) {
 	FILE* fp;
@@ -856,6 +862,8 @@ void createExt(extUse* extArray, int extArrayLength, char* assemblyFileName) {
 		fprintf(fp,"%s ", extArray[i].label);
 		fprintf(fp," %04d\n", extArray[i].IC);
 	}
-	free(assemblyFileName);
-}
+	free(fileName);
+	fclose(fp);
+}	
+
 
