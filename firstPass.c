@@ -192,6 +192,7 @@ int firstPass(FILE* fp, label** labels, unsigned char** dataArray, unsigned int*
 		}
 		if (c == EOF)break;
 	}
+	free(ogLine);
 	/*same as else*/	
 	if (!isSuccessful) return -1;
 	return labelCount;

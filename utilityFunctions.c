@@ -843,8 +843,8 @@ void createEnt(label* labels, int labelCount,  char* assemblyFileName)
 			fprintf(fp,"%s ", labels[i].symbol);
 			fprintf(fp,"%04d\n", labels[i].address);
 		}
-
 	}
+	free(assemblyFileName);
 }
 void createExt(extUse* extArray, int extArrayLength, char* assemblyFileName) {
 	FILE* fp;
@@ -856,5 +856,6 @@ void createExt(extUse* extArray, int extArrayLength, char* assemblyFileName) {
 		fprintf(fp,"%s ", extArray[i].label);
 		fprintf(fp," %04d\n", extArray[i].IC);
 	}
+	free(assemblyFileName);
 }
 

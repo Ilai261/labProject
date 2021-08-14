@@ -57,15 +57,19 @@ int main(int argc, char *argv[])
 		firstPassSuccessful = labelCount >= 0;
 		fclose(fp);
 		fp = fopen(fileName, "r");
-		if(firstPassSuccessful == true)
+		if (firstPassSuccessful == true)
 		{
-			extUse *extArray = calloc(JOpCounter, sizeof(extUse));
+			extUse* extArray = calloc(JOpCounter, sizeof(extUse));
 			int extArrayLength = 0;
 			if (secondPass(fp, labels, labelCount, codeArray, &IC, &DC, extArray, &extArrayLength, operations, labelLines)) {
 				createObject(codeArray, dataArray, IC, DC, fileName);
 				createEnt(labels, labelCount, fileName);
 				createExt(extArray, extArrayLength, fileName);
 			}
+			free(labelLines);
+			free(codeArray);
+			free(dataArray);
+			free(extArray);
 		}
 		fclose(fp);
 	}
