@@ -44,7 +44,7 @@ int main(int argc, char *argv[])
 	FILE* fp = NULL;
 	bool firstPassSuccessful = false;
 	labelLines[0] = 0;
-	printf("NHKSD\n\nBUGO\n\n");
+	int JOpCounter = 0;
 	for (x = 1; x < argc; x++){
 		char* fileName = argv[x];
 		fp = fopen(fileName, "r");
@@ -53,18 +53,20 @@ int main(int argc, char *argv[])
 			printf("Error, couldn't open file %s\n", fileName);
 			continue;
 		}
-		labelCount = firstPass(fp,&labels,&dataArray, &codeArray, &IC, &DC, operations,&labelLines);
+		labelCount = firstPass(fp,&labels,&dataArray, &codeArray, &IC, &DC,&JOpCounter, operations,&labelLines);
 		firstPassSuccessful = labelCount >= 0;
 		fclose(fp);
 		fp = fopen(fileName, "r");
 		if(firstPassSuccessful == true)
 		{
-			secondPass(fp,labels,labelCount,codeArray, &IC, &DC, operations, labelLines);
-			createObject(codeArray, dataArray, IC, DC, fileName);
-			/*createExt(labels,  fileName);*/
-			createEnt(labels, labelCount, fileName);
+			extUse *extArray = calloc(JOpCounter, sizeof(extUse));
+			int extArrayLength = 0;
+			if (secondPass(fp, labels, labelCount, codeArray, &IC, &DC, extArray, &extArrayLength, operations, labelLines)) {
+				createObject(codeArray, dataArray, IC, DC, fileName);
+				createExt(extArray, extArrayLength, fileName);
+				createEnt(labels, labelCount, fileName);
+			}
 		}
-		
 		fclose(fp);
 	}
 	return 0;

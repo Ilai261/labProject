@@ -1,7 +1,7 @@
 /* This is the file that runs the first pass function of the assembler */
 #include "utilityFunctions.h"
 
-int firstPass(FILE* fp, label** labels, unsigned char** dataArray, unsigned int** codeArray, int* IC, int* DC, operation* operations, int ** labelLines)
+int firstPass(FILE* fp, label** labels, unsigned char** dataArray, unsigned int** codeArray, int* IC, int* DC,int* JOpCounter, operation* operations, int ** labelLines)
 {
 	char* line = malloc(81);
 	char* ogLine = line;
@@ -87,6 +87,7 @@ int firstPass(FILE* fp, label** labels, unsigned char** dataArray, unsigned int*
 
 				if (!isLabelOk) {
 					isNewLine = true;
+					isSuccessful = false;
 					continue;
 				}
 				/*add the label to the tabel, continue scanning until end of line*/
@@ -100,42 +101,43 @@ int firstPass(FILE* fp, label** labels, unsigned char** dataArray, unsigned int*
 				}
 				guidanceNum = isGuidance(operationName + 1); /*taking the next pointer to skip the point in the first char*/
 				if (operationName[0] == '.' && guidanceNum >= 0) {/*do if it is a guidance row*/
-
-					if (guidanceNum <= 3) {
-						if (isLabel) {
-							labelToAdd.symbol[0] = '\0'; labelToAdd.address = *(DC); labelToAdd.isEntry = false; 
-							labelToAdd.isExternal = false; labelToAdd.isData = true; labelToAdd.isCode = false;
-							strcat(labelToAdd.symbol, labelName);
-							(*labels)[labelCount - 1] = labelToAdd;
+					while (scanStrAndMove(&line, "%s", temp) > 0) {
+						strcat(dataString, temp);
+					}
+					if (checkGuidanceParam(lineCount, guidanceNum, dataString)){
+						if (guidanceNum <= 3) {
+							if (isLabel) {
+								labelToAdd.symbol[0] = '\0'; labelToAdd.address = *(DC); labelToAdd.isEntry = false;
+									labelToAdd.isExternal = false; labelToAdd.isData = true; labelToAdd.isCode = false;
+									strcat(labelToAdd.symbol, labelName);
+									(*labels)[labelCount - 1] = labelToAdd;
+							}
+							writeDataFromGuidance(guidanceNum, dataArray, DC, dataString);
 						}
+						else {
+							if (guidanceNum == 4) {
+								isNewLine = true;
+								continue;
+							}
+							if (guidanceNum == 5) {
+								if (checkLabel(dataString, *labels, labelCount, operations, lineCount)) {
+									if (labelCount % 10 == 0) {
+										*labels = (label*)realloc((*labels), sizeof(label) * (labelCount + 10));
+									}
+									labelCount++;
+									labelToAdd.symbol[0] = '\0'; labelToAdd.address = 0; labelToAdd.isEntry = false;
+									labelToAdd.isExternal = true; labelToAdd.isData = false; labelToAdd.isCode = false;
+									strcat(labelToAdd.symbol, dataString);
+									(*labels)[labelCount - 1] = labelToAdd;
+									if (isLabel) printf("Line %d: label before extern is meaningless", lineCount);
+								}
 
-
-						while (scanStrAndMove(&line, "%s", temp) > 0) {
-							strcat(dataString, temp);
+							}
 						}
-						writeDataFromGuidance(guidanceNum, dataArray, DC, dataString);
 					}
 					else {
-						if (guidanceNum == 4) {
-							isNewLine = true;
-							continue;
-						}
-						if (guidanceNum == 5) {
-							char  externName[32];
-							scanStrAndMove(&line, "%s", externName);
-							if (checkLabel(externName, *labels, labelCount, operations, lineCount)) {
-								if (labelCount % 10 == 0) {
-									*labels = (label*)realloc((*labels), sizeof(label) * (labelCount + 10));
-								}
-								labelCount++;
-								labelToAdd.symbol[0] = '\0'; labelToAdd.address = 0; labelToAdd.isEntry = false; 
-								labelToAdd.isExternal = true; labelToAdd.isData = false; labelToAdd.isCode = false;
-								strcat(labelToAdd.symbol, externName);
-								(*labels)[labelCount - 1] = labelToAdd;
-								if (isLabel) printf("Line %d: label before extern is meaningless", lineCount);
-							}
-
-						}
+						isSuccessful = false;
+						continue;
 					}
 				}
 				else {
@@ -149,13 +151,14 @@ int firstPass(FILE* fp, label** labels, unsigned char** dataArray, unsigned int*
 					operationNumber = operationNum(operations, operationName);
 					if (operationNumber == -1) {
 						printf("Line %d: unknown word used as operation or guidance", lineCount);
+						isSuccessful = false;
 						isNewLine = true;
 						continue;
 
 					}
 
 					currentOperation = operations[operationNumber];
-
+					if (currentOperation.operationType == 'J') *JOpCounter++;
 					while (scanStrAndMove(&line, "%s", temp) > 0) {
 						strcat(parameters, temp);
 					}
@@ -167,6 +170,11 @@ int firstPass(FILE* fp, label** labels, unsigned char** dataArray, unsigned int*
 					if (parameterCheck( lineCount,*IC, parameters, currentOperation, labelLines)) {
 						(*codeArray)[codeByte / 4] = operationCode(currentOperation, parameters);
 						*IC += 4;
+					}
+					else {
+						isSuccessful = false;
+						isNewLine = true;
+						continue;
 					}
 
 				}

@@ -15,3 +15,4 @@ void writeToBits(unsigned int* placeToWrite, int startBit, int endBit, int data)
 bool parameterCheck(int line, int IC, char* parameters, operation currentOperation, int** labelLines);
 int operationLabelCode(operation currentOperation, char* parameters, unsigned int* codeArray, int lineNum, int IC, label* labels, int labelCount);
 int moveAndScanInt(char** readString, char* formatString, int* writeInt);
+bool checkGuidanceParam(int line, int guidanceNum, char* parameters);

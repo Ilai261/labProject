@@ -1,7 +1,7 @@
 /* This is the file that runs the second pass function of the assembler */
 
 #include "utilityFunctions.h"
-void secondPass(FILE* fp, label* labels, int labelCount, unsigned int* codeArray, int* IC, int* DC, operation* operations, int* labelLines)
+bool secondPass(FILE* fp, label* labels, int labelCount, unsigned int* codeArray, int* IC, int* DC, extUse* extArray,int* extArrayLength, operation* operations, int* labelLines)
 {
 	int numOfLabelLines = labelLines[0];
 	int thisLine = 0;
@@ -16,6 +16,7 @@ void secondPass(FILE* fp, label* labels, int labelCount, unsigned int* codeArray
 	int i = 0;
 	int linesWithLabels = 0;
 	operation currentOperation;
+	bool retVal = true;
 
 	for (i = 0; i < labelCount; i++) {
 		if (labels[i].isData) {
@@ -28,7 +29,8 @@ void secondPass(FILE* fp, label* labels, int labelCount, unsigned int* codeArray
 		temp[0] = '\0';
 		parameters[0] = '\0';
 		thisLine++;
-		oglineStr[strlen(oglineStr) - 1] = '\0';
+		int lineLength = strlen(oglineStr);
+		if(oglineStr[lineLength -1] == '\n') oglineStr[lineLength -1] = '\0';
 		lineStr = oglineStr;
 		scanStrAndMove(&lineStr, "%s", opScanStr);
 		if (strcmp(opScanStr, ".entry") == 0) {
@@ -43,25 +45,27 @@ void secondPass(FILE* fp, label* labels, int labelCount, unsigned int* codeArray
 
 		opName = opScanStr;
 		int opNum = operationNum(operations, opName);
-		if (opNum >= 15) {
-			currentOperation = operations[opNum];
+		currentOperation = operations[opNum];
+		if (currentOperation.opcode >= 15) {
 			while (scanStrAndMove(&lineStr, "%s", temp) > 0) {
 				strcat(parameters, temp);
 			}
 			IC = labelLines[linesWithLabels + 1];
-			linesWithLabels += operationLabelCode(currentOperation, parameters, codeArray, thisLine, IC, labels, labelCount);
-		}
-
-
-		/*while (fgets(oglineStr, 80, fp) == NULL) {
-			lineStr = oglineStr;
-			scanStrAndMove(&lineStr, "%s", opScanStr);
-			if (strcmp(opScanStr, ".entry") == 0) {
-				scanStrAndMove(&lineStr, "%s", labelName);
-				labels[labelNum(labels, labelCount, labelName)].isEntry = true;
+			int opReturn = operationLabelCode(currentOperation, parameters, codeArray, thisLine, IC, labels, labelCount);
+			if (opReturn == -1) {
+				retVal = false;
+				continue;
 			}
-			thisLine++;
-		}*/
+			if (opReturn == 2) {
+				extArray[*extArrayLength].IC = IC;
+				strcpy(extArray[*extArrayLength].label, parameters);
+				linesWithLabels++;
+				(*extArrayLength)++;
+				continue;
+			}
+			linesWithLabels += opReturn;
+		}
 	}
+	return retVal;
 }
 
