@@ -1,7 +1,12 @@
 #include "utilityFunctions.h"
-bool checkLabel(char *labelName,label* labels, int labelCount, operation* operations, int lineCount) 
+#include <string.h>
+#include <stdio.h>
+#include <ctype.h>
+#include <stdlib.h>
+
+bool checkLabel(char *labelName,labelData* labels, int labelCount, operationData* operations, int lineCount) 
 {
-	if(strlen(labelName) > 31)
+	if(strlen(labelName) > maxLabelStrLength - 1)
 	{
 		printf("Line %d: more than 31 characters in a label\n", lineCount);
 		return false;
@@ -35,7 +40,7 @@ bool checkLabel(char *labelName,label* labels, int labelCount, operation* operat
 		
 }
 
-int operationNum(operation* operations, char* string){
+int operationNum(operationData* operations, char* string){
 	/*maybe improve the efficiency*/
 	int i;
 	for(i = 0; i < numOfOperations; i++)
@@ -48,7 +53,7 @@ int operationNum(operation* operations, char* string){
 	return -1;	
 }
 
-int labelNum(label* labels,int labelCount, char* string){
+int labelNum(labelData* labels,int labelCount, char* string){
 	int i;
 	for(i = 0; i < labelCount; i++)
 	{
@@ -119,7 +124,7 @@ void writeDataFromGuidance(int guidanceNum,unsigned char** dataArray,int *DC,cha
 		}
 	}
 }
-int operationCode(operation currentOperation, char* parameters){
+int operationCode(operationData currentOperation, char* parameters){
 	
 	unsigned int retVal = 0u;
 	if(currentOperation.operationType == 'R'){
@@ -279,21 +284,8 @@ bool fileApproved(char* fileName) {
 	printf("dood not approve\n");
 	return false;
 }
-char* getFileName(char* fileName) 
-{
-	int i = 0;
-	char* retval = (char*)calloc(100, 1);
-	strcpy(retval, fileName);
-	while (retval[i] != '\0') i++;
 
-	if (i >= 5) {
-		retval[i - 3] = '\0';
-	}
-	return retval;
-	
-}
-
-bool parameterCheck(int line,int IC, char* parameters, operation currentOperation, int** labelLines)
+bool parameterCheck(int line,int IC, char* parameters, operationData currentOperation, int** labelLines)
 {
 	int i;
 	int paramNum = 0;
@@ -604,8 +596,8 @@ bool parameterCheck(int line,int IC, char* parameters, operation currentOperatio
 	return true;
 }
 
-int operationLabelCode(operation currentOperation, char* parameters, unsigned int* codeArray,int lineNum ,int IC, label* labels, int labelCount) {
-	label paramLabel;
+int operationLabelCode(operationData currentOperation, char* parameters, unsigned int* codeArray,int lineNum ,int IC, labelData* labels, int labelCount) {
+	labelData paramLabel;
 	int opPos = (IC - 100) / 4;
 	int labelNumber;
 	if (currentOperation.operationType == 'J') {
@@ -810,56 +802,5 @@ bool checkGuidanceParam(int line, int guidanceNum, char* parameters)
 	}
 	return true;
 }
-void createObject(unsigned int* codeArray, unsigned char* dataArray,int IC,int DC, char* assemblyFileName) {
-	FILE* fp;
-	int byteCount = 0;
-	char* fileName = getFileName(assemblyFileName);
-	strcat(fileName, ".ob");
-	fp = fopen(fileName, "w"); /*change to if != NULL sussy*/
-	fprintf(fp, "	%d %d", IC - 100, DC);
-	while (byteCount < IC - 100) {
-		if (byteCount % 4 == 0) fprintf(fp, "\n%04d ", byteCount + 100);
-		fprintf(fp,"%02X ", ((unsigned char*)codeArray)[byteCount]);
-		byteCount++;
-	}
-	while (byteCount < IC - 100 + DC) {
-		if (byteCount % 4 == 0) fprintf(fp, "\n%04d ", byteCount + 100);
-		fprintf(fp,"%02X ", dataArray[byteCount-IC + 100]);
-		byteCount++;
-	}
-	fclose(fp);
-	free(fileName);
-}
-
-
-void createEnt(label* labels, int labelCount,  char* assemblyFileName)
-{
-	FILE* fp;
-	int i = 0;
-	char* fileName = getFileName(assemblyFileName);
-	strcat(fileName, ".ent");
-	fp = fopen(fileName, "w");
-	for (i = 0; i < labelCount; i++) {
-		if (labels[i].isEntry) {
-			fprintf(fp,"%s ", labels[i].symbol);
-			fprintf(fp,"%04d\n", labels[i].address);
-		}
-	}
-	free(fileName);
-	fclose(fp);
-}
-void createExt(extUse* extArray, int extArrayLength, char* assemblyFileName) {
-	FILE* fp;
-	int i = 0;
-	char* fileName = getFileName(assemblyFileName);
-	strcat(fileName, ".ext");
-	fp = fopen(fileName, "w");
-	for (i = 0; i < extArrayLength; i++) {
-		fprintf(fp,"%s ", extArray[i].label);
-		fprintf(fp," %04d\n", extArray[i].IC);
-	}
-	free(fileName);
-	fclose(fp);
-}	
 
 

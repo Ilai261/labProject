@@ -1,9 +1,14 @@
 /* This is the file that runs the first pass function of the assembler */
-#include "utilityFunctions.h"
 
-int firstPass(FILE* fp, label** labels, unsigned char** dataArray, unsigned int** codeArray, int* IC, int* DC,int* JOpCounter, operation* operations, int ** labelLines)
+#include "firstPass.h"
+#include "utilityFunctions.h"
+#include <stdlib.h>
+#include <ctype.h>
+#include <string.h>
+
+int firstPass(FILE* fp, labelData** labels, unsigned char** dataArray, unsigned int** codeArray, int* IC, int* DC,int* JOpCounter, operationData* operations, int ** labelLines)
 {
-	char* line = malloc(81);
+	char* line = malloc(maxLineStrLength);
 	char* ogLine = line;
 	int labelCount = 0;
 	int lineLength = 0;
@@ -22,7 +27,7 @@ int firstPass(FILE* fp, label** labels, unsigned char** dataArray, unsigned int*
 		}
 		if (c != '\n' && c != EOF)
 		{
-			if (lineLength <= 80)
+			if (lineLength < maxLineStrLength)
 			{
 				line[lineLength] = c;
 				lineLength++;
@@ -53,15 +58,15 @@ int firstPass(FILE* fp, label** labels, unsigned char** dataArray, unsigned int*
 
 			if (isEmptyLine == false && firstChar != ';') /* not an empty line and not a comment*/
 			{
-				label labelToAdd = {"",0,false,false,false,false};
-				char dataString[80] = "";
-				char  temp[80] = "";
-				char parameters[80] = "";
+				labelData labelToAdd = {"",0,false,false,false,false};
+				char dataString[maxLineStrLength] = "";
+				char  temp[maxLineStrLength] = "";
+				char parameters[maxLineStrLength] = "";
 				int guidanceNum;
 				char* operationName;
 				int operationNumber;
-				operation currentOperation;
-				char *labelName = malloc(32);
+				operationData currentOperation;
+				char *labelName = malloc(maxLabelStrLength);
 				bool isLabel = false;
 				bool isLabelOk = true;
 				int codeByte;
@@ -77,7 +82,7 @@ int firstPass(FILE* fp, label** labels, unsigned char** dataArray, unsigned int*
 
 							isLabel = true;
 							if (labelCount % 10 == 0) {
-								*labels = (label*)realloc(*labels, sizeof(label) * (labelCount + 10));
+								*labels = (labelData*)realloc(*labels, sizeof(labelData) * (labelCount + 10));
 							}
 							labelCount++;
 						}
@@ -122,7 +127,7 @@ int firstPass(FILE* fp, label** labels, unsigned char** dataArray, unsigned int*
 							if (guidanceNum == 5) {
 								if (checkLabel(dataString, *labels, labelCount, operations, lineCount)) {
 									if (labelCount % 10 == 0) {
-										*labels = (label*)realloc((*labels), sizeof(label) * (labelCount + 10));
+										*labels = (labelData*)realloc((*labels), sizeof(labelData) * (labelCount + 10));
 									}
 									labelCount++;
 									labelToAdd.symbol[0] = '\0'; labelToAdd.address = 0; labelToAdd.isEntry = false;

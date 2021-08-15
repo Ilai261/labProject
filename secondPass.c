@@ -1,21 +1,24 @@
 /* This is the file that runs the second pass function of the assembler */
 
+#include "secondPass.h"
 #include "utilityFunctions.h"
-bool secondPass(FILE* fp, label* labels, int labelCount, unsigned int* codeArray, int* IC, int* DC, extUse* extArray,int* extArrayLength, operation* operations, int* labelLines)
+
+#include <string.h>
+
+bool secondPass(FILE* fp, labelData* labels, int labelCount, unsigned int* codeArray, int* IC, int* DC, extUse* extArray,int* extArrayLength, operationData* operations, int* labelLines)
 {
 	int numOfLabelLines = labelLines[0];
 	int thisLine = 0;
-	int lineIdx;
-	char temp[80] = "";
-	char parameters[80] = "";
-	char oglineStr[80];
+	char temp[maxLineStrLength] = "";
+	char parameters[maxLineStrLength] = "";
+	char oglineStr[maxLineStrLength];
 	char* lineStr;
-	char opScanStr[80];
+	char opScanStr[maxLineStrLength];
 	char* opName;
-	char labelName[32];
+	char labelName[maxLabelStrLength];
 	int i = 0;
 	int linesWithLabels = 0;
-	operation currentOperation;
+	operationData currentOperation;
 	bool retVal = true;
 
 	for (i = 0; i < labelCount; i++) {
