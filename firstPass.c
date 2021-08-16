@@ -6,6 +6,16 @@
 #include <ctype.h>
 #include <string.h>
 
+bool checkLabel(char* labelName, labelData* labels, int labelCount, operationData* operations, int lineCount);
+
+void writeDataFromGuidance(int guidanceNum, unsigned char** dataArray, int* DC, char* dataString);
+
+int operationCode(operationData currentOperation, char* parameters);
+
+bool parameterCheck(int line, int IC, char* parameters, operationData currentOperation, int** labelLines);
+
+bool checkGuidanceParam(int line, int guidanceNum, char* parameters);
+
 int firstPass(FILE* fp, labelData** labels, unsigned char** dataArray, unsigned int** codeArray, int* IC, int* DC,int* JOpCounter, operationData* operations, int ** labelLines)
 {
 	char* line = malloc(maxLineStrLength);
@@ -203,3 +213,619 @@ int firstPass(FILE* fp, labelData** labels, unsigned char** dataArray, unsigned 
 	return labelCount;
 }
  
+bool checkLabel(char* labelName, labelData* labels, int labelCount, operationData* operations, int lineCount)
+{
+	if (strlen(labelName) > maxLabelStrLength - 1)
+	{
+		printf("Line %d: more than 31 characters in a label\n", lineCount);
+		return false;
+	}
+
+	if (!isalpha(labelName[0]))
+	{
+		printf("Line %d: label has to start with an alphabetic character\n", lineCount);
+		return false;
+	}
+
+	if (labelNum(labels, labelCount, labelName) != -1) {
+		printf("Line %d: a label with that name already exists\n", lineCount);
+		return false;
+
+	}
+
+	if (operationNum(operations, labelName) != -1) {
+		printf("Line %d: label name can't be an operation name\n", lineCount);
+		return false;
+
+	}
+
+	if (isGuidance(labelName) != -1) {
+		printf("Line %d: label name can't be A guidance word name\n", lineCount);
+		return false;
+
+	}
+	return true;
+
+
+}
+
+void writeDataFromGuidance(int guidanceNum, unsigned char** dataArray, int* DC, char* dataString) {
+	if (guidanceNum == 0) {
+		int i = 0;
+		int num = 0u;
+		*dataArray = realloc(*dataArray, *DC + 40);
+		while (moveAndScanInt(&dataString, "%hhd", &num) > 0) {
+			(*dataArray)[*DC + i] = num;
+			i++;
+		}
+		*DC += i;
+	}
+	if (guidanceNum == 1) {
+		int i = 0;
+		int num = 0u;
+		*dataArray = realloc(*dataArray, *DC + 80);
+		while (moveAndScanInt(&dataString, "%hd", &num) > 0) {
+			*((short int*)&((*dataArray)[*DC + i])) = num;
+			i += 2;
+		}
+		*DC += i;
+	}
+	if (guidanceNum == 2) {
+		int i = 0;
+		int  num;
+		*dataArray = realloc(*dataArray, *DC + 160);
+		while (moveAndScanInt(&dataString, "%d", (int*)&num) > 0) {
+			*((int*)&((*dataArray)[*DC + i])) = num;
+			i += 4;
+		}
+		*DC += i;
+	}
+	if (guidanceNum == 3) {
+		int i;
+		int sLength;
+		sLength = strlen(dataString);
+		if (sLength > 1) {
+			dataString[sLength - 1] = '\0';
+			dataString++;
+			*dataArray = realloc(*dataArray, *DC + sLength);
+			for (i = 0; i < sLength - 1; i++) {
+				(*dataArray)[*DC + i] = dataString[i];
+			}
+			*DC += sLength - 1;
+		}
+	}
+}
+
+int operationCode(operationData currentOperation, char* parameters) {
+
+	unsigned int retVal = 0u;
+	if (currentOperation.operationType == 'R') {
+		if (currentOperation.opcode == 0) {
+			int registerArray[3];
+			if (sscanf(parameters, "$%d,$%d,$%d", &registerArray[0], &registerArray[1], &registerArray[2]) > 0) {
+				writeToBits(&retVal, 6, 10, currentOperation.funct);
+				writeToBits(&retVal, 11, 15, registerArray[2]);
+				writeToBits(&retVal, 16, 20, registerArray[1]);
+				writeToBits(&retVal, 21, 25, registerArray[0]);
+				writeToBits(&retVal, 26, 31, currentOperation.opcode);
+				return retVal;
+			}
+		}
+		else {
+
+			int registerArray[2];
+			if (sscanf(parameters, "$%d,$%d", &registerArray[0], &registerArray[1]) > 0) {
+				writeToBits(&retVal, 6, 10, currentOperation.funct);
+				writeToBits(&retVal, 21, 25, registerArray[0]);
+				writeToBits(&retVal, 11, 15, registerArray[1]);
+				writeToBits(&retVal, 26, 31, currentOperation.opcode);
+				return retVal;
+			}
+		}
+	}
+
+	if (currentOperation.operationType == 'I') {
+		if (currentOperation.opcode < 15) {
+			int paramArray[2];
+			short int immed = 0;
+			if (sscanf(parameters, "$%d,%hd,$%d", &paramArray[0], &immed, &paramArray[1]) > 0) {
+				writeToBits(&retVal, 0, 15, immed);
+				writeToBits(&retVal, 16, 20, paramArray[1]);
+				writeToBits(&retVal, 21, 25, paramArray[0]);
+				writeToBits(&retVal, 26, 31, currentOperation.opcode);
+				return retVal;
+			}
+
+		}
+		if (currentOperation.opcode < 19) {
+			int paramArray[2];
+			if (sscanf(parameters, "$%d,$%d", &paramArray[0], &paramArray[1]) > 0) {
+				writeToBits(&retVal, 16, 20, paramArray[1]);
+				writeToBits(&retVal, 21, 25, paramArray[0]);
+				writeToBits(&retVal, 26, 31, currentOperation.opcode);
+				return retVal;
+			}
+		}
+		else {
+			int paramArray[2];
+			short int immed = 0;
+			if (sscanf(parameters, "$%d,%hd,$%d", &paramArray[0], &immed, &paramArray[1]) > 0) {
+				writeToBits(&retVal, 0, 15, immed);
+				writeToBits(&retVal, 16, 20, paramArray[1]);
+				writeToBits(&retVal, 21, 25, paramArray[0]);
+				writeToBits(&retVal, 26, 31, currentOperation.opcode);
+				return retVal;
+			}
+		}
+	}
+	if (currentOperation.operationType == 'J') {
+		if (currentOperation.opcode == 30) {
+			int regNum = 0;
+			if (sscanf(parameters, "$%d", &regNum) > 0) {
+				writeToBits(&retVal, 25, 25, 1);
+				writeToBits(&retVal, 0, 24, regNum);
+				writeToBits(&retVal, 26, 31, currentOperation.opcode);
+				return retVal;
+			}
+			else {
+				writeToBits(&retVal, 25, 25, 0);
+				writeToBits(&retVal, 26, 31, currentOperation.opcode);
+				return retVal;
+			}
+		}
+		if (currentOperation.opcode <= 32) {
+			writeToBits(&retVal, 25, 25, 0);
+			writeToBits(&retVal, 26, 31, currentOperation.opcode);
+			return retVal;
+		}
+		if (currentOperation.opcode == 63) {
+			writeToBits(&retVal, 26, 31, currentOperation.opcode);
+			writeToBits(&retVal, 0, 25, 0);
+			return retVal;
+		}
+	}
+	return retVal;
+}
+
+bool parameterCheck(int line, int IC, char* parameters, operationData currentOperation, int** labelLines)
+{
+	int i;
+	int paramNum = 0;
+	int num = 0;
+	int countNumLengths = 0;
+	char* ogParam = parameters;
+	char* og_xParam = ogParam;
+	if (currentOperation.operationType == 'R')
+	{
+		if (currentOperation.opcode == 0)
+		{
+			if (isdigit(parameters[0]))
+			{
+				printf("Line %d: invalid register defining, no $\n", line);
+				return false;
+			}
+			for (i = 0; i <= 2; i++)
+			{
+				if (moveAndScanInt(&parameters, "%d", &num) > 0) paramNum++;
+				if (paramNum > i)
+				{
+					if (num > 31 || num < 0)
+					{
+						printf("Line %d: invalid register number\n", line);
+						return false;
+					}
+					if (*(parameters) != COMMA && *(parameters) != '\0')
+					{
+						printf("Line %d: invalid register defining, no comma\n", line);
+						return false;
+					}
+					og_xParam = parameters;
+					parameters--;
+					while (isdigit(*parameters)) parameters--;
+					if (*(parameters) != DOLLAR)
+					{
+						printf("Line %d: invalid register defining, no $\n", line);
+						return false;
+					}
+					parameters = og_xParam;
+					countNumLengths += numberLength(num);
+				}
+			}
+			if (paramNum < 3)
+			{
+				printf("Line %d: not enough parameters in %s operation\n", line, currentOperation.operationName);
+				return false;
+			}
+			i = strlen(ogParam);
+			if (i > (6 + countNumLengths))
+			{
+				printf("Line %d: invalid char in %s operation parameters\n", line, currentOperation.operationName);
+				return false;
+			}
+			return true;
+		}
+		else
+		{
+			if (isdigit(parameters[0]))
+			{
+				printf("Line %d: invalid register defining, no $\n", line);
+				return false;
+			}
+			for (i = 0; i <= 1; i++)
+			{
+				if (moveAndScanInt(&parameters, "%d", &num) > 0) paramNum++;
+				if (paramNum > i)
+				{
+					if (num > 31 || num < 0)
+					{
+						printf("Line %d: invalid register number\n", line);
+						return false;
+					}
+					if (*(parameters) != COMMA && *(parameters) != '\0')
+					{
+						printf("Line %d: invalid register defining, no comma\n", line);
+						return false;
+					}
+					og_xParam = parameters;
+					parameters--;
+					while (isdigit(*parameters)) parameters--;
+					if (*(parameters) != DOLLAR)
+					{
+						printf("Line %d: invalid register defining, no $\n", line);
+						return false;
+					}
+					parameters = og_xParam;
+					countNumLengths += numberLength(num);
+				}
+			}
+			if (paramNum < 2)
+			{
+				printf("Line %d: not enough parameters in %s operation\n", line, currentOperation.operationName);
+				return false;
+			}
+			i = strlen(ogParam);
+			if (i > (4 + countNumLengths))
+			{
+				printf("Line %d: invalid char in %s operation parameters\n", line, currentOperation.operationName);
+				return false;
+			}
+			return true;
+		}
+	}
+
+	if (currentOperation.operationType == 'I')
+	{
+		if (currentOperation.opcode < 15 || currentOperation.opcode > 19)
+		{
+			if (isdigit(parameters[0]))
+			{
+				printf("Line %d: invalid register defining, no $\n", line);
+				return false;
+			}
+
+			for (i = 0; i <= 2; i++)
+			{
+				if (moveAndScanInt(&parameters, "%d", &num) > 0) paramNum++;
+				if (paramNum > i)
+				{
+					if (paramNum == 2 && (num > 32677 || num < -32678))
+					{
+						printf("Line %d: invalid inmed number\n", line);
+						return false;
+					}
+					if (paramNum != 2 && (num > 31 || num < 0))
+					{
+						printf("Line %d: invalid register number\n", line);
+						return false;
+					}
+					if (*(parameters) != COMMA && *(parameters) != '\0')
+					{
+						printf("Line %d: invalid register defining, no comma\n", line);
+						return false;
+					}
+					og_xParam = parameters;
+					parameters--;
+					while (isdigit(*parameters)) parameters--;
+					if (*(parameters) != DOLLAR && paramNum != 2) /*a little sussy in here*/
+					{
+						printf("Line %d: invalid register defining, no $\n", line);
+						return false;
+					}
+					parameters = og_xParam;
+					countNumLengths += numberLength(num);
+				}
+			}
+			if (paramNum < 3)
+			{
+				printf("Line %d: not enough parameters in %s operation\n", line, currentOperation.operationName);
+				return false;
+			}
+			i = strlen(ogParam);
+			if (i > (6 + countNumLengths))
+			{
+				printf("Line %d: invalid char in %s operation parameters\n", line, currentOperation.operationName);
+				return false;
+			}
+			return true;
+		}
+
+		else
+		{
+			if (isdigit(parameters[0]))
+			{
+				printf("Line %d: invalid register defining, no $\n", line);
+				return false;
+			}
+
+			for (i = 0; i <= 1; i++)
+			{
+				if (moveAndScanInt(&parameters, "%d", &num) > 0) paramNum++;
+				if (paramNum > i)
+				{
+					if (num > 31 || num < 0)
+					{
+						printf("Line %d: invalid register number\n", line);
+						return false;
+					}
+
+					if (*(parameters) != COMMA && *(parameters) != '\0')
+					{
+						printf("Line %d: invalid register defining, no comma\n", line);
+						return false;
+					}
+					og_xParam = parameters;
+					parameters--;
+					while (isdigit(*parameters)) parameters--;
+					if (*(parameters) != DOLLAR)
+					{
+						printf("Line %d: invalid register defining, no $\n", line);
+						return false;
+					}
+					parameters = og_xParam;
+					countNumLengths += numberLength(num);
+				}
+			}
+			if (paramNum < 2)
+			{
+				printf("Line %d: not enough parameters in %s operation\n", line, currentOperation.operationName);
+				return false;
+			}
+
+			i = strlen(ogParam);
+			if (!isalpha(parameters[1]))
+			{
+				printf("Line %d: no label in %s operation parameters\n", line, currentOperation.operationName);
+				return false;
+			}
+			else
+			{
+				if (i > (6 + countNumLengths + strlen(parameters)))
+				{
+					printf("Line %d: invalid char in %s operation parameters\n", line, currentOperation.operationName);
+					return false;
+				}
+				if (*labelLines[0] % 10 == 0)
+				{
+					*labelLines = realloc(*labelLines, (*labelLines)[0] + 40);
+				}
+				(*labelLines)[0]++;
+				(*labelLines)[(*labelLines)[0]] = IC;
+				return true;
+			}
+
+		}
+		return true;
+	}
+
+	if (currentOperation.operationType == 'J')
+	{
+		if (currentOperation.opcode == 30)
+		{
+			if (moveAndScanInt(&parameters, "%d", &num) > 0)
+			{
+				if (!isalpha(ogParam[0]) && ogParam[0] != DOLLAR)
+				{
+					printf("Line %d: invalid label or register defining in %s operation", line, currentOperation.operationName);
+					return false;
+				}
+				if (!isalpha(ogParam[0]))
+				{
+					if (num > 31 || num < 0)
+					{
+						printf("Line %d: invalid register number", line);
+						return false;
+					}
+				}
+				else
+				{
+					if (*labelLines[0] % 10 == 0)
+					{
+						*labelLines = realloc(*labelLines, (*labelLines)[0] + 40);
+					}
+					(*labelLines)[0]++;
+					(*labelLines)[(*labelLines)[0]] = IC;
+					return true;
+				}
+
+			}
+			else
+			{
+				if (!isalpha(ogParam[0]))
+				{
+					printf("Line %d: invalid label defining\n", line);
+					return false;
+				}
+				else
+				{
+					if (*labelLines[0] % 10 == 0)
+					{
+						*labelLines = realloc(*labelLines, (*labelLines)[0] + 40);
+					}
+					(*labelLines)[0]++;
+					(*labelLines)[(*labelLines)[0]] = IC;
+					return true;
+				}
+			}
+			return true;
+		}
+		if (currentOperation.opcode <= 32)
+		{
+			if (!isalpha(ogParam[0]))
+			{
+				printf("Line %d: invalid label defining\n", line);
+				return false;
+			}
+			else
+			{
+				if (*labelLines[0] % 10 == 0)
+				{
+					*labelLines = realloc(*labelLines, (*labelLines)[0] + 40);
+				}
+				(*labelLines)[0]++;
+				(*labelLines)[(*labelLines)[0]] = IC;
+				return true;
+			}
+		}
+		if (currentOperation.opcode == 63)
+		{
+			if (parameters[0] != '\0')
+			{
+				printf("Line %d: stop function should not have parameters", line);
+				return false;
+			}
+		}
+	}
+	return true;
+}
+
+bool checkGuidanceParam(int line, int guidanceNum, char* parameters)
+{
+	int num;
+	int countParamLengths = 0;
+	int countParam = 0;
+	int parametersLength = strlen(parameters);
+	if (guidanceNum < 0)
+	{
+		return false;
+	}
+	if (guidanceNum == 0)
+	{
+		while (moveAndScanInt(&parameters, "%d", &num) > 0)
+		{
+			if (num > 127 || num < -128)
+			{
+				printf("Line %d: invalid parameter number, should be between -128 and 127\n", line);
+				return false;
+			}
+			if (*parameters != COMMA && *parameters != '\0')
+			{
+				printf("Line %d: invalid parameter defining, no comma\n", line);
+				return false;
+			}
+			countParamLengths += (numberLength(num) + 1);
+			countParam++;
+		}
+		if (countParam < 1)
+		{
+			printf("Line %d: no Parameters in function\n", line);
+			return false;
+		}
+		if (countParamLengths < parametersLength)
+		{
+			printf("Line %d: invalid char in operation parameters\n", line);
+
+			return false;
+		}
+		return true;
+	}
+	if (guidanceNum == 1)
+	{
+		while (moveAndScanInt(&parameters, "%d", &num) > 0)
+		{
+			if (num > 32767 || num < -32768)
+			{
+				printf("Line %d: invalid parameter number, should be between -32768 and 32767\n", line);
+				return false;
+			}
+			if (*parameters != COMMA && *parameters != '\0')
+			{
+				printf("Line %d: invalid parameter defining, no comma\n", line);
+				return false;
+			}
+			countParamLengths += (numberLength(num) + 1);
+			countParam++;
+		}
+		if (countParam < 1)
+		{
+			printf("Line %d: no Parameters in function\n", line);
+			return false;
+		}
+		if (countParamLengths < parametersLength)
+		{
+			printf("Line %d: invalid char in operation parameters\n", line);
+
+			return false;
+		}
+		return true;
+	}
+	if (guidanceNum == 2)
+	{
+		while (moveAndScanInt(&parameters, "%d", &num) > 0)
+		{
+			if (num > 2147483647 || num < -2147483647)
+			{
+				printf("Line %d: invalid parameter number, should be between -2147483648 and 2147483647\n", line);
+				return false;
+			}
+			if (*parameters != COMMA && *parameters != '\0')
+			{
+				printf("Line %d: invalid parameter defining, no comma\n", line);
+				return false;
+			}
+			countParamLengths += (numberLength(num) + 1);
+			countParam++;
+		}
+		if (countParam < 1)
+		{
+			printf("Line %d: no Parameters in function\n", line);
+			return false;
+		}
+		if (countParamLengths < parametersLength)
+		{
+			printf("Line %d: invalid char in operation parameters\n", line);
+
+			return false;
+		}
+		return true;
+	}
+	if (guidanceNum == 3)
+	{
+		if (parameters[0] != '"')
+		{
+			printf("Line %d: invalid string defining, no \" at the beginning of the string definition\n", line);
+
+			return false;
+		}
+		if (parameters[strlen(parameters) - 1] != '"')
+		{
+			printf("Line %d: invalid string defining, no \" at the end of the string definition\n", line);
+
+			return false;
+		}
+		return true;
+	}
+	if (guidanceNum == 4 || guidanceNum == 5)
+	{
+		if (!isalpha(parameters[0]))
+
+		{
+
+			printf("Line %d: invalid label defining\n", line);
+
+			return false;
+
+		}
+		return true;
+	}
+	return true;
+}

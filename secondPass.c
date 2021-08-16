@@ -5,6 +5,8 @@
 
 #include <string.h>
 
+int operationLabelCode(operationData currentOperation, char* parameters, unsigned int* codeArray, int lineNum, int IC, labelData* labels, int labelCount);
+
 bool secondPass(FILE* fp, labelData* labels, int labelCount, unsigned int* codeArray, int* IC, int* DC, extUse* extArray,int* extArrayLength, operationData* operations, int* labelLines)
 {
 	int numOfLabelLines = labelLines[0];
@@ -70,5 +72,67 @@ bool secondPass(FILE* fp, labelData* labels, int labelCount, unsigned int* codeA
 		}
 	}
 	return retVal;
+}
+
+int operationLabelCode(operationData currentOperation, char* parameters, unsigned int* codeArray, int lineNum, int IC, labelData* labels, int labelCount) {
+	labelData paramLabel;
+	int opPos = (IC - 100) / 4;
+	int labelNumber;
+	if (currentOperation.operationType == 'J') {
+		if (currentOperation.opcode == 30) {
+			int regNum = 0;
+			if (sscanf(parameters, "$%d", &regNum) > 0) {
+				return 0;
+			}
+			else {
+				labelNumber = labelNum(labels, labelCount, parameters);
+				if (labelNumber == -1) {
+					printf("Line %d: unknown label used as a parameter for J operation\n", lineNum);
+					return -1;
+				}
+				paramLabel = labels[labelNumber];
+				if (paramLabel.isExternal) {
+					return 2;
+				}
+				writeToBits(&codeArray[opPos], 0, 24, paramLabel.address);
+				return 1;
+			}
+
+		}
+		if (currentOperation.opcode <= 32) {
+			labelNumber = labelNum(labels, labelCount, parameters);
+			if (labelNumber == -1) {
+				printf("Line %d: unknown label used as a parameter for J operation\n", lineNum);
+				return -1;
+			}
+			paramLabel = labels[labelNumber];
+			if (paramLabel.isExternal) {
+				return 2;
+			}
+			writeToBits(&codeArray[opPos], 0, 24, paramLabel.address);
+			return 1;
+		}
+	}
+	if (currentOperation.operationType == 'I') {
+		if (currentOperation.opcode < 19) {
+			int commaCounter = 0;
+			short int distanceToLabel;
+			while (commaCounter < 2) {
+				if (*parameters == COMMA) commaCounter++;
+				parameters++;
+			}
+			labelNumber = labelNum(labels, labelCount, parameters);
+			if (labelNumber == -1) printf("Line %d: unknown label used as a parameter for I operation\n", lineNum);
+			paramLabel = labels[labelNumber];
+			if (paramLabel.isExternal) {
+				printf("Line %d: external label cannot be used as a parameter for I operation\n", lineNum);
+				return -1;
+			}
+			distanceToLabel = (short int)(paramLabel.address - IC);
+			writeToBits(&codeArray[opPos], 0, 15, distanceToLabel);
+			return 1;
+		}
+	}
+	return 0;
 }
 

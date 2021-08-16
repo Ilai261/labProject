@@ -8,6 +8,8 @@
 
 #include <stdlib.h>
 
+bool fileApproved(char* fileName);
+
 int main(int argc, char *argv[])
 {
 	
@@ -40,9 +42,15 @@ int main(int argc, char *argv[])
 			int extArrayLength = 0;
 			extUse* extArray = calloc(JOpCounter, sizeof(extUse));
 			if (secondPass(fp, labels, labelCount, codeArray, &IC, &DC, extArray, &extArrayLength, operationsArr, labelLines)) {
-				createObject(codeArray, dataArray, IC, DC, fileName);
-				createEnt(labels, labelCount, fileName);
-				createExt(extArray, extArrayLength, fileName);
+				if (!createObject(codeArray, dataArray, IC, DC, fileName)) {
+					printf("Error, couldn't create object file");
+				}
+				if (!createEnt(labels, labelCount, fileName)) {
+					printf("Error, couldn't create entries file");
+				}
+				if (!createExt(extArray, extArrayLength, fileName)) {
+					printf("Error, couldn't create externals file");
+				}
 			}
 			free(labelLines);
 			free(codeArray);
@@ -52,4 +60,12 @@ int main(int argc, char *argv[])
 		fclose(fp);
 	}
 	return 0;
+}
+
+bool fileApproved(char* fileName) {
+	int i = 0;
+	while (fileName[i] != '\0') i++;
+	if (i >= 5 && fileName[i - 1] == 's' && fileName[i - 2] == 'a' && fileName[i - 3] == '.') return true;
+	printf("dood not approve\n");
+	return false;
 }
