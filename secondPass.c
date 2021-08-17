@@ -4,9 +4,12 @@
 #include "utilityFunctions.h"
 
 #include <string.h>
-
+/* Completes the binary code that could not be written in the first pass And checks the parameters for errors,
+Returns -1 if there is an error, 0 if it didn't Write, 1 if it wrote code and 2 if the label used is external*/
 int operationLabelCode(operationData currentOperation, char* parameters, unsigned int* codeArray, int lineNum, int IC, labelData* labels, int labelCount);
 
+/*runs the second pass of the assembler, it fils the parts of data array that could not be written in the first pass and checks the code for errors,
+if successful it returns true*/
 bool secondPass(FILE* fp, labelData* labels, int labelCount, unsigned int* codeArray, int* IC, int* DC, extUse* extArray,int* extArrayLength, operationData* operations, int* labelLines)
 {
 	int numOfLabelLines = labelLines[0];
@@ -23,13 +26,13 @@ bool secondPass(FILE* fp, labelData* labels, int labelCount, unsigned int* codeA
 	operationData currentOperation;
 	bool retVal = true;
 
-	for (i = 0; i < labelCount; i++) {
+	for (i = 0; i < labelCount; i++) { /*update the label addresses*/
 		if (labels[i].isData) {
 			labels[i].address += *IC;
 		}
 	}
 
-	while (fgets(oglineStr, 80, fp) != NULL) {
+	while (fgets(oglineStr, 80, fp) != NULL) { /*get new line*/
 		int IC;
 		temp[0] = '\0';
 		parameters[0] = '\0';
@@ -38,7 +41,7 @@ bool secondPass(FILE* fp, labelData* labels, int labelCount, unsigned int* codeA
 		if(oglineStr[lineLength -1] == '\n') oglineStr[lineLength -1] = '\0';
 		lineStr = oglineStr;
 		scanStrAndMove(&lineStr, "%s", opScanStr);
-		if (strcmp(opScanStr, ".entry") == 0) {
+		if (strcmp(opScanStr, ".entry") == 0) {  /*update the entry labels*/
 			scanStrAndMove(&lineStr, "%s", labelName);
 			labels[labelNum(labels, labelCount, labelName)].isEntry = true;
 			continue;
@@ -51,7 +54,7 @@ bool secondPass(FILE* fp, labelData* labels, int labelCount, unsigned int* codeA
 		opName = opScanStr;
 		int opNum = operationNum(operations, opName);
 		currentOperation = operations[opNum];
-		if (currentOperation.opcode >= 15) {
+		if (currentOperation.opcode >= 15) {/*write the missing code */
 			while (scanStrAndMove(&lineStr, "%s", temp) > 0) {
 				strcat(parameters, temp);
 			}

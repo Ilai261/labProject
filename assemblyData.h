@@ -11,7 +11,7 @@
 #define DOLLAR '$'
 #define COMMA ','
 
-typedef struct
+typedef struct /*a struct to hold an operation*/
 {
 	char operationName[5];
 	char operationType;
@@ -20,7 +20,7 @@ typedef struct
 
 } operationData;
 
-typedef struct
+typedef struct /*a struct to hold a label*/
 {
 	char symbol[32];
 	int address;
@@ -31,7 +31,7 @@ typedef struct
 
 } labelData;
 
-typedef struct
+typedef struct /*a struct to hold a use of an external label*/
 {
 	char label[32];
 	int IC;
