@@ -1,6 +1,6 @@
 #include "assemblyData.h"
 
-operationData operationsArr[numOfOperations] = {
+operationData operationsArr[NUMOFOPERATIONS] = {
 		{"add",'R',1,0},
 		{"sub",'R',2,0},
 		{"and",'R',3,0},

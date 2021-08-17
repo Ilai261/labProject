@@ -7,7 +7,7 @@
 /*This function checks the location of an operation in the operations array and returns it. return -1 if it's not in the array.*/
 int operationNum(operationData* operations, char* string){
 	int i;
-	for(i = 0; i < numOfOperations; i++)
+	for(i = 0; i < NUMOFOPERATIONS; i++)
 	{
 		if(strcmp(string,operations[i].operationName) == 0){
 			return i;
@@ -32,9 +32,9 @@ int labelNum(labelData* labels,int labelCount, char* string){
 
 /*This function checks if a given string represents a guidance operation*/
 int isGuidance(char* string){
-	char *guidanceWords[numOfGuidanceWords] = {"db","dh","dw","asciz","entry","extern"};
+	char *guidanceWords[NUMOFGUIDANCEWORDS] = {"db","dh","dw","asciz","entry","extern"};
 	int i;
-	 for(i = 0; i < numOfGuidanceWords; i++)
+	 for(i = 0; i < NUMOFGUIDANCEWORDS; i++)
 	{
 		if(strcmp(string,guidanceWords[i]) == 0){
 			return i;

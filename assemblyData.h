@@ -4,10 +4,10 @@
 
 #include <stdbool.h>
 
-#define numOfOperations 27
-#define numOfGuidanceWords 6
-#define maxLineStrLength 81
-#define maxLabelStrLength 32
+#define NUMOFOPERATIONS 27
+#define NUMOFGUIDANCEWORDS 6
+#define MAXLINESTRLENGTH 81
+#define MAXLABELSTRLENGTH 32
 #define DOLLAR '$'
 #define COMMA ','
 
@@ -37,6 +37,6 @@ typedef struct /*a struct to hold a use of an external label*/
 	int IC;
 } extUse;
 
-operationData operationsArr[numOfOperations];
+operationData operationsArr[NUMOFOPERATIONS];
 
 #endif

@@ -25,7 +25,7 @@ bool checkGuidanceParam(int line, int guidanceNum, char* parameters);
 if successful it returns the number of labels and if not it returns -1*/
 int firstPass(FILE* fp, labelData** labels, unsigned char** dataArray, unsigned int** codeArray, int* IC, int* DC,int* JOpCounter, operationData* operations, int ** labelLines)
 {
-	char* line = malloc(maxLineStrLength); /*the line string*/
+	char* line = malloc(MAXLINESTRLENGTH); /*the line string*/
 	char* ogLine = line; /*the original address of the line string*/
 	int labelCount = 0;
 	int lineLength = 0;
@@ -45,7 +45,7 @@ int firstPass(FILE* fp, labelData** labels, unsigned char** dataArray, unsigned 
 		}
 		if (c != '\n' && c != EOF)
 		{
-			if (lineLength < maxLineStrLength)
+			if (lineLength < MAXLINESTRLENGTH)
 			{
 				line[lineLength] = c;
 				lineLength++;
@@ -77,14 +77,14 @@ int firstPass(FILE* fp, labelData** labels, unsigned char** dataArray, unsigned 
 			if (isEmptyLine == false && firstChar != ';') /* not an empty line and not a comment*/
 			{
 				labelData labelToAdd = {"",0,false,false,false,false};
-				char dataString[maxLineStrLength] = "";
-				char  temp[maxLineStrLength] = "";
-				char parameters[maxLineStrLength] = "";
+				char dataString[MAXLINESTRLENGTH] = "";
+				char  temp[MAXLINESTRLENGTH] = "";
+				char parameters[MAXLINESTRLENGTH] = "";
 				int guidanceNum;
 				char* operationName;
 				int operationNumber;
 				operationData currentOperation;
-				char *labelName = malloc(maxLabelStrLength);
+				char *labelName = malloc(MAXLABELSTRLENGTH);
 				bool isLabel = false;
 				bool isLabelOk = true;
 				int codeByte;
@@ -245,7 +245,7 @@ int firstPass(FILE* fp, labelData** labels, unsigned char** dataArray, unsigned 
  
 bool checkLabel(char* labelName, labelData* labels, int labelCount, operationData* operations, int lineCount)
 {
-	if (strlen(labelName) > maxLabelStrLength - 1)
+	if (strlen(labelName) > MAXLABELSTRLENGTH - 1)
 	{
 		printf("Line %d: more than 31 characters in a label\n", lineCount);
 		return false;

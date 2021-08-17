@@ -14,13 +14,13 @@ bool secondPass(FILE* fp, labelData* labels, int labelCount, unsigned int* codeA
 {
 	int numOfLabelLines = labelLines[0];
 	int thisLine = 0;
-	char temp[maxLineStrLength] = "";
-	char parameters[maxLineStrLength] = "";
-	char oglineStr[maxLineStrLength];
+	char temp[MAXLINESTRLENGTH] = "";
+	char parameters[MAXLINESTRLENGTH] = "";
+	char oglineStr[MAXLINESTRLENGTH];
 	char* lineStr;
-	char opScanStr[maxLineStrLength];
+	char opScanStr[MAXLINESTRLENGTH];
 	char* opName;
-	char labelName[maxLabelStrLength];
+	char labelName[MAXLABELSTRLENGTH];
 	int i = 0;
 	int linesWithLabels = 0;
 	operationData currentOperation;
