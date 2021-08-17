@@ -4,8 +4,8 @@
 #include <ctype.h>
 #include <stdlib.h>
 
+/*This function checks the location of an operation in the operations array and returns it. return -1 if it's not in the array.*/
 int operationNum(operationData* operations, char* string){
-	/*maybe improve the efficiency*/
 	int i;
 	for(i = 0; i < numOfOperations; i++)
 	{
@@ -17,6 +17,7 @@ int operationNum(operationData* operations, char* string){
 	return -1;	
 }
 
+/*This function checks the location of a label in the labels array and returns it. return -1 if it's not in the array.*/
 int labelNum(labelData* labels,int labelCount, char* string){
 	int i;
 	for(i = 0; i < labelCount; i++)
@@ -29,6 +30,7 @@ int labelNum(labelData* labels,int labelCount, char* string){
 	return -1;
 }
 
+/*This function checks if a given string represents a guidance operation*/
 int isGuidance(char* string){
 	char *guidanceWords[numOfGuidanceWords] = {"db","dh","dw","asciz","entry","extern"};
 	int i;
@@ -41,6 +43,7 @@ int isGuidance(char* string){
 	return -1;
 }
 
+/*This function gets an unsigned int, startBit and endBit ints and edits the bits from startBit to endBit to data*/
 void writeToBits(unsigned int * placeToWrite,int startBit, int endBit, int data)
 {
 	unsigned int mask = intPow(2,32) - 1;
@@ -51,6 +54,7 @@ void writeToBits(unsigned int * placeToWrite,int startBit, int endBit, int data)
 	
 }
 
+/*This functions receives 2 ints, base and exp and returns base to the power of exp*/
 int intPow(int base, int exp)
 {
     int result = 1;
@@ -67,7 +71,9 @@ int intPow(int base, int exp)
     return result;
 }
 
-int scanStrAndMove(char **readStringPtr, char* formatString, char * writeString){
+/*This function gets a string, skips in it so long there are white chars, scans in it a string in a certain format formatString, and puts it into writeString's reference*/
+int scanStrAndMove(char **readStringPtr, char* formatString, char * writeString)
+{
 	int retVal;
 	int forwardBy = 0;
 	char* readString = *readStringPtr;
@@ -80,7 +86,9 @@ int scanStrAndMove(char **readStringPtr, char* formatString, char * writeString)
 	return retVal;
 }
 
-int scanIntAndMove(char **readString, char* formatString, int * writeInt){
+/*This function gets a string, skips in it so long there are white chars, scans in it in a certain format formatString, and puts it into writeString's reference*/
+int scanIntAndMove(char **readString, char* formatString, int * writeInt)
+{
 	int retVal;
 	int forwardBy = 0;
 	while (isspace((*readString)[forwardBy])) {
@@ -92,7 +100,9 @@ int scanIntAndMove(char **readString, char* formatString, int * writeInt){
 	return retVal;
 }
 
-int numberLength(int num){
+/*This function returns the decimal length of a given int*/
+int numberLength(int num)
+{
 	int x = abs(num);
 	int retVal = 0;
 	if(x == 0) return 1;
@@ -104,7 +114,9 @@ int numberLength(int num){
 	return retVal;
 }
 
-int moveAndScanInt(char** readString, char* formatString, int* writeInt) {
+/*This function gets a string, skips in it so long there are no numbers, scans in it in a certain format formatString, and puts it into writeString's reference*/
+int moveAndScanInt(char** readString, char* formatString, int* writeInt)
+ {
 	int retVal;
 	int forwardBy = 0;
 	while ((*readString)[forwardBy] != '\0' && !isdigit((*readString)[forwardBy]) && (*readString)[forwardBy] != '-' && (*readString)[forwardBy] != '+') {
