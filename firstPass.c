@@ -30,6 +30,7 @@ int firstPass(FILE* fp, labelData** labels, unsigned char** dataArray, unsigned 
 	{
 		c = getc(fp);
 		if (isNewLine) {
+			if (c == EOF)break;
 			line = ogLine;
 			lineCount++;
 			lineLength = 0;
@@ -101,6 +102,7 @@ int firstPass(FILE* fp, labelData** labels, unsigned char** dataArray, unsigned 
 
 
 				if (!isLabelOk) {
+					free(labelName);
 					isNewLine = true;
 					isSuccessful = false;
 					continue;
@@ -121,7 +123,7 @@ int firstPass(FILE* fp, labelData** labels, unsigned char** dataArray, unsigned 
 						dataString[0] = line[0];
 						if (line[0] != '\0') {
 							int i = 0;
-							while (i == 0 || (line[i] != '\"' && *line != '\0')) {
+							while (i == 0 || (line[i] != '\"' && line[i] != '\0')) {
 								i++;
 								dataString[i] = line[i];
 							}
@@ -146,6 +148,7 @@ int firstPass(FILE* fp, labelData** labels, unsigned char** dataArray, unsigned 
 						}
 						else {
 							if (guidanceNum == 4) {
+								free(labelName);
 								isNewLine = true;
 								continue;
 							}
@@ -159,13 +162,15 @@ int firstPass(FILE* fp, labelData** labels, unsigned char** dataArray, unsigned 
 									labelToAdd.isExternal = true; labelToAdd.isData = false; labelToAdd.isCode = false;
 									strcat(labelToAdd.symbol, dataString);
 									(*labels)[labelCount - 1] = labelToAdd;
-									if (isLabel) printf("Line %d: label before extern is meaningless", lineCount);
+									if (isLabel) printf("Line %d: label before extern is meaningless\n", lineCount);
 								}
 
 							}
 						}
 					}
 					else {
+						free(labelName);
+						isNewLine = true;
 						isSuccessful = false;
 						continue;
 					}
@@ -180,7 +185,8 @@ int firstPass(FILE* fp, labelData** labels, unsigned char** dataArray, unsigned 
 
 					operationNumber = operationNum(operations, operationName);
 					if (operationNumber == -1) {
-						printf("Line %d: unknown word used as operation or guidance", lineCount);
+						printf("Line %d: unknown word used as operation or guidance\n", lineCount);
+						free(labelName);
 						isSuccessful = false;
 						isNewLine = true;
 						continue;
@@ -202,6 +208,7 @@ int firstPass(FILE* fp, labelData** labels, unsigned char** dataArray, unsigned 
 						*IC += 4;
 					}
 					else {
+						free(labelName);
 						isSuccessful = false;
 						isNewLine = true;
 						continue;
@@ -215,12 +222,13 @@ int firstPass(FILE* fp, labelData** labels, unsigned char** dataArray, unsigned 
 				isNewLine = true;
 				/*sscanf for an operation word*/
 			}
-			/*else
+			else
 			{
-				lineCount++;
-			}*/
+				isNewLine = true;
+				continue;
+			}
 		}
-		if (c == EOF)break;
+		
 	}
 	free(ogLine);
 	/*same as else*/	
@@ -640,14 +648,14 @@ bool parameterCheck(int line, int IC, char* parameters, operationData currentOpe
 			{
 				if (!isalpha(ogParam[0]) && ogParam[0] != DOLLAR)
 				{
-					printf("Line %d: invalid label or register defining in %s operation", line, currentOperation.operationName);
+					printf("Line %d: invalid label or register defining in %s operation\n", line, currentOperation.operationName);
 					return false;
 				}
 				if (!isalpha(ogParam[0]))
 				{
 					if (num > 31 || num < 0)
 					{
-						printf("Line %d: invalid register number", line);
+						printf("Line %d: invalid register number\n", line);
 						return false;
 					}
 				}
@@ -705,7 +713,7 @@ bool parameterCheck(int line, int IC, char* parameters, operationData currentOpe
 		{
 			if (parameters[0] != '\0')
 			{
-				printf("Line %d: stop function should not have parameters", line);
+				printf("Line %d: stop function should not have parameters\n", line);
 				return false;
 			}
 		}
@@ -742,7 +750,7 @@ bool checkGuidanceParam(int line, int guidanceNum, char* parameters)
 		}
 		if (countParam < 1)
 		{
-			printf("Line %d: no Parameters in function\n", line);
+			printf("Line %d: invalid Parameters in function\n", line);
 			return false;
 		}
 		if (countParamLengths < parametersLength)
@@ -772,7 +780,7 @@ bool checkGuidanceParam(int line, int guidanceNum, char* parameters)
 		}
 		if (countParam < 1)
 		{
-			printf("Line %d: no Parameters in function\n", line);
+			printf("Line %d: invalid Parameters in function\n", line);
 			return false;
 		}
 		if (countParamLengths < parametersLength)
@@ -802,7 +810,7 @@ bool checkGuidanceParam(int line, int guidanceNum, char* parameters)
 		}
 		if (countParam < 1)
 		{
-			printf("Line %d: no Parameters in function\n", line);
+			printf("Line %d: invalid Parameters in function\n", line);
 			return false;
 		}
 		if (countParamLengths < parametersLength)

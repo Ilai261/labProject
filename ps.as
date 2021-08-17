@@ -35,4 +35,3 @@ R: lb $4,345,$7
    .dw 21314,32423,5645,675
 STR: .asciz "nadav pivonia"
 END: stop
-
