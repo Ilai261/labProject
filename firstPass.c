@@ -6,20 +6,27 @@
 #include <ctype.h>
 #include <string.h>
 
+/*checks if a label name fits the label format, prints error messages if neaded and returns true if no error messages are printed*/
 bool checkLabel(char* labelName, labelData* labels, int labelCount, operationData* operations, int lineCount);
 
+/*writes data to the data array for data storage guidance instructions, updates DC accordingly*/
 void writeDataFromGuidance(int guidanceNum, unsigned char** dataArray, int* DC, char* dataString);
 
+/*turns operations and parameters to thare corrosponding binary code, returns the four bytes of code as an int*/
 int operationCode(operationData currentOperation, char* parameters);
 
-bool parameterCheck(int line, int IC, char* parameters, operationData currentOperation, int** labelLines);
+/*checks if the parameters of an operation fit its format, prints error messages if neaded and returns true if no error messages are printed*/
+bool operationParameterCheck(int line, int IC, char* parameters, operationData currentOperation, int** labelLines);
 
+/*checks if the parameters of A guidance instructions fit its format, prints error messages if neaded and returns true if no error messages are printed*/
 bool checkGuidanceParam(int line, int guidanceNum, char* parameters);
 
+/*runs the first pass of the assembler, it fils the data array labels array and code array as much as possible and checs the code for errors, 
+if successful it returns the number of labels and if not it returns -1*/
 int firstPass(FILE* fp, labelData** labels, unsigned char** dataArray, unsigned int** codeArray, int* IC, int* DC,int* JOpCounter, operationData* operations, int ** labelLines)
 {
-	char* line = malloc(maxLineStrLength);
-	char* ogLine = line;
+	char* line = malloc(maxLineStrLength); /*the line string*/
+	char* ogLine = line; /*the original address of the line string*/
 	int labelCount = 0;
 	int lineLength = 0;
 	int lineCount = 1;
@@ -175,7 +182,7 @@ int firstPass(FILE* fp, labelData** labels, unsigned char** dataArray, unsigned 
 						continue;
 					}
 				}
-				else {
+				else {/*it is an operation row*/
 					if (isLabel) {
 						labelToAdd.symbol[0] = '\0'; labelToAdd.address = *(IC); labelToAdd.isEntry = false; 
 						labelToAdd.isExternal = false; labelToAdd.isData = false; labelToAdd.isCode = true;
@@ -203,8 +210,8 @@ int firstPass(FILE* fp, labelData** labels, unsigned char** dataArray, unsigned 
 					if (codeByte % 40 == 0) {
 						*codeArray = realloc((*codeArray), codeByte + 40);
 					}
-					if (parameterCheck( lineCount,*IC, parameters, currentOperation, labelLines)) {
-						(*codeArray)[codeByte / 4] = operationCode(currentOperation, parameters);
+					if (operationParameterCheck( lineCount,*IC, parameters, currentOperation, labelLines)) {
+						(*codeArray)[codeByte / 4] = operationCode(currentOperation, parameters);/*set the four bytes to thare corrosponding binary code*/
 						*IC += 4;
 					}
 					else {
@@ -410,7 +417,7 @@ int operationCode(operationData currentOperation, char* parameters) {
 	return retVal;
 }
 
-bool parameterCheck(int line, int IC, char* parameters, operationData currentOperation, int** labelLines)
+bool operationParameterCheck(int line, int IC, char* parameters, operationData currentOperation, int** labelLines)
 {
 	int i;
 	int paramNum = 0;
