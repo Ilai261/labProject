@@ -13,20 +13,20 @@ bool fileApproved(char* fileName);
 int main(int argc, char *argv[])
 {
 	
-	labelData* labels = NULL;
-	int labelCount = 0;
-	unsigned int* codeArray = malloc(10);
-	unsigned char* dataArray = malloc(10);
-	int* labelLines = malloc(40);
-	int IC = 100;
-	int DC = 0;
 	int x;
-	FILE* fp = NULL;
-	bool firstPassSuccessful = false;
-	int JOpCounter = 0;
-	labelLines[0] = 0;
 	for (x = 1; x < argc; x++){
 		char* fileName = argv[x];
+		labelData* labels = NULL;
+		int labelCount = 0;
+		unsigned int* codeArray = malloc(10);
+		unsigned char* dataArray = malloc(10);
+		int* labelLines = malloc(40);
+		int IC = 100;
+		int DC = 0;
+		FILE* fp = NULL;
+		bool firstPassSuccessful = false;
+		int JOpCounter = 0;
+		labelLines[0] = 0;
 		fp = fopen(fileName, "r");
 		if(!fileApproved(fileName) || fp == NULL)
 		{

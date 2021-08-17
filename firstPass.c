@@ -116,8 +116,23 @@ int firstPass(FILE* fp, labelData** labels, unsigned char** dataArray, unsigned 
 				}
 				guidanceNum = isGuidance(operationName + 1); /*taking the next pointer to skip the point in the first char*/
 				if (operationName[0] == '.' && guidanceNum >= 0) {/*do if it is a guidance row*/
-					while (scanStrAndMove(&line, "%s", temp) > 0) {
-						strcat(dataString, temp);
+					if (guidanceNum == 3) {
+						while (*line != '\"' && *line != '\0') line++;
+						dataString[0] = line[0];
+						if (line[0] != '\0') {
+							int i = 0;
+							while (i == 0 || (line[i] != '\"' && *line != '\0')) {
+								i++;
+								dataString[i] = line[i];
+							}
+						}
+						
+					}
+					else
+					{
+						while (scanStrAndMove(&line, "%s", temp) > 0) {
+							strcat(dataString, temp);
+						}
 					}
 					if (checkGuidanceParam(lineCount, guidanceNum, dataString)){
 						if (guidanceNum <= 3) {
@@ -495,7 +510,7 @@ bool parameterCheck(int line, int IC, char* parameters, operationData currentOpe
 
 	if (currentOperation.operationType == 'I')
 	{
-		if (currentOperation.opcode < 15 || currentOperation.opcode > 19)
+		if (currentOperation.opcode < 15 || currentOperation.opcode > 18)
 		{
 			if (isdigit(parameters[0]))
 			{
