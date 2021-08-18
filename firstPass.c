@@ -799,8 +799,8 @@ bool checkGuidanceParam(int line, int guidanceNum, char* parameters)
 
 	if (guidanceNum == 2)
 	{
-		long int longNum;
-		while (moveAndScanInt(&parameters, "%ld", (int*)&longNum) > 0)
+		long long int longNum;
+		while (moveAndScanLongLong(&parameters, "%lld", &longNum) > 0)
 		{
 			if (longNum > 2147483647l || longNum < -2147483647l)
 			{

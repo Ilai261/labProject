@@ -17,3 +17,5 @@ int numberLength(int x);
 void writeToBits(unsigned int* placeToWrite, int startBit, int endBit, int data);
 
 int moveAndScanInt(char** readString, char* formatString, int* writeInt);
+
+int moveAndScanLongLong(char** readString, char* formatString, long* writeInt);
