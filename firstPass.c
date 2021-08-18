@@ -714,7 +714,7 @@ bool operationParameterCheck(int line, int IC, char* parameters, operationData c
 bool checkGuidanceParam(int line, int guidanceNum, char* parameters)
 {
 	int numOfCommas = 0;
-	int num;
+	long int num;
 	int countParamLengths = -1;
 	int countParam = 0;
 	int parametersLength = strlen(parameters);
@@ -724,7 +724,7 @@ bool checkGuidanceParam(int line, int guidanceNum, char* parameters)
 	}
 	if (guidanceNum == 0)
 	{
-		while (moveAndScanInt(&parameters, "%d", &num) > 0)
+		while (moveAndScanInt(&parameters, "%ld", &num) > 0)
 		{
 			if (num > 127 || num < -128)
 			{
@@ -761,7 +761,7 @@ bool checkGuidanceParam(int line, int guidanceNum, char* parameters)
 	}
 	if (guidanceNum == 1)
 	{
-		while (moveAndScanInt(&parameters, "%d", &num) > 0)
+		while (moveAndScanInt(&parameters, "%ld", &num) > 0)
 		{
 			if (num > 32767 || num < -32768)
 			{
@@ -798,7 +798,7 @@ bool checkGuidanceParam(int line, int guidanceNum, char* parameters)
 	}
 	if (guidanceNum == 2)
 	{
-		while (moveAndScanInt(&parameters, "%d", &num) > 0)
+		while (moveAndScanInt(&parameters, "%ld", &num) > 0)
 		{
 			if (num > 2147483647 || num < -2147483647)
 			{
