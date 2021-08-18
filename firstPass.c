@@ -799,21 +799,22 @@ bool checkGuidanceParam(int line, int guidanceNum, char* parameters)
 
 	if (guidanceNum == 2)
 	{
-		int longNum[2];
-		while (moveAndScanLongLong(&parameters, "%lld", &longNum) > 0)
+		double longNum;
+		while (sscanf(parameters, "%lf", &longNum) > 0)
 		{
-			if (longNum > 2147483647l || longNum < -2147483647l)
+			if (longNum > 2147483647.0 || longNum < -2147483647.0)
 			{
 				printf("Line %d: invalid parameter number, should be between -2147483648 and 2147483647\n", line);
 				return false;
 			}
+			moveAndScanInt(&parameters, "%d", &num);
 			if (*parameters != COMMA && *parameters != '\0')
 			{
 				printf("Line %d: invalid parameter defining, no comma\n", line);
 				return false;
 			}
 			if (*parameters == COMMA) numOfCommas++;
-			countParamLengths += (numberLength((int)longNum) + 1);
+			countParamLengths += (numberLength(num) + 1);
 			countParam++;
 		}
 		if (countParam < 1)

@@ -140,20 +140,6 @@ int moveAndScanInt(char** readString, char* formatString, int* writeInt)
 	return retVal;
 }
 
-int moveAndScanLongLong(char** readString, char* formatString, long long* writeInt)
-{
-	int retVal;
-	int forwardBy = 0;
-	while ((*readString)[forwardBy] != '\0' && !isdigit((*readString)[forwardBy]) && (*readString)[forwardBy] != '-' && (*readString)[forwardBy] != '+') {
-		forwardBy++;
-	}
-	*readString += forwardBy;
-	retVal = sscanf(*readString, formatString, writeInt);
-	forwardBy = 0;
-	forwardBy += numberLength(*writeInt);
-	if (retVal > 0) *readString += forwardBy;
-	return retVal;
-}
 
 
 
