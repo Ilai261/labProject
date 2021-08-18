@@ -23,7 +23,6 @@ int main(int argc, char *argv[])
 		int IC = 100;
 		int DC = 0;
 		FILE* fp = NULL;
-		bool firstPassSuccessful = false;
 		int JOpCounter = 0; /*This variable is used to measure the amount of J operation lines received*/
 		char* fileName = argv[fileIndex];
 		int extArrayLength = 0;
