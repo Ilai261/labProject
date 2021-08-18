@@ -140,7 +140,7 @@ int moveAndScanInt(char** readString, char* formatString, int* writeInt)
 	return retVal;
 }
 
-int moveAndScanLongLong(char** readString, char* formatString,long long* writeInt)
+int moveAndScanLongLong(char** readString, char* formatString, long long* writeInt)
 {
 	int retVal;
 	int forwardBy = 0;
