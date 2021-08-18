@@ -20,29 +20,26 @@ int main(int argc, char *argv[])
 		int labelCount = 0;
 		unsigned int* codeArray = malloc(10);
 		unsigned char* dataArray = malloc(10);
-		int* labelLines = malloc(40);
 		int IC = 100;
 		int DC = 0;
 		FILE* fp = NULL;
 		bool firstPassSuccessful = false;
 		int JOpCounter = 0; /*This variable is used to measure the amount of J operation lines received*/
 		char* fileName = argv[fileIndex];
-		labelLines[0] = 0;
+		int extArrayLength = 0;
+		extUse* extArray; /*To make the .ext file*/
+		
 		fp = fopen(fileName, "r");
 		if(!fileApproved(fileName) || fp == NULL)
 		{
 			printf("Error, couldn't open file %s\n", fileName);
 			continue;
 		}
-		labelCount = firstPass(fp, &labels, &dataArray, &codeArray, &IC, &DC, &JOpCounter, operationsArr, &labelLines);
-		firstPassSuccessful = labelCount >= 0;
-		fclose(fp);
-		fp = fopen(fileName, "r");
-		if (firstPassSuccessful == true)
-		{
-			int extArrayLength = 0;
-			extUse* extArray = calloc(JOpCounter, sizeof(extUse)); /*To make the .ext file*/
-			if (secondPass(fp, labels, labelCount, codeArray, &IC, &DC, extArray, &extArrayLength, operationsArr, labelLines)) {
+		if (firstPass(fp, &labels, &labelCount, &dataArray, &codeArray, &IC, &DC, &JOpCounter, operationsArr)) {
+			extArray = calloc(JOpCounter, sizeof(extUse));
+			fclose(fp);
+			fp = fopen(fileName, "r");
+			if (secondPass(fp, labels, labelCount, codeArray, &IC, &DC, extArray, &extArrayLength, operationsArr)) {
 				if (!createObject(codeArray, dataArray, IC, DC, fileName)) {
 					printf("Error, couldn't create object file");
 				}
@@ -53,11 +50,12 @@ int main(int argc, char *argv[])
 					printf("Error, couldn't create externals file");
 				}
 			}
-			free(labelLines);
-			free(codeArray);
-			free(dataArray);
 			free(extArray);
 		}
+		free(codeArray);
+		free(dataArray);
+		
+		
 		fclose(fp);
 	}
 	return 0;

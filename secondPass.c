@@ -10,9 +10,8 @@ int operationLabelCode(operationData currentOperation, char* parameters, unsigne
 
 /*runs the second pass of the assembler, it fils the parts of data array that could not be written in the first pass and checks the code for errors,
 if successful it returns true*/
-bool secondPass(FILE* fp, labelData* labels, int labelCount, unsigned int* codeArray, int* IC, int* DC, extUse* extArray,int* extArrayLength, operationData* operations, int* labelLines)
+bool secondPass(FILE* fp, labelData* labels, int labelCount, unsigned int* codeArray, int* IC, int* DC, extUse* extArray,int* extArrayLength, operationData* operations)
 {
-	int numOfLabelLines = labelLines[0];
 	int thisLine = 0;
 	char temp[MAXLINESTRLENGTH] = "";
 	char parameters[MAXLINESTRLENGTH] = "";
@@ -25,6 +24,7 @@ bool secondPass(FILE* fp, labelData* labels, int labelCount, unsigned int* codeA
 	int linesWithLabels = 0;
 	operationData currentOperation;
 	bool retVal = true;
+	int currentIC = 100;
 
 	for (i = 0; i < labelCount; i++) { /*update the label addresses*/
 		if (labels[i].isData) {
@@ -33,7 +33,7 @@ bool secondPass(FILE* fp, labelData* labels, int labelCount, unsigned int* codeA
 	}
 
 	while (fgets(oglineStr, 80, fp) != NULL) { /*get new line*/
-		int IC;
+		
 		temp[0] = '\0';
 		parameters[0] = '\0';
 		thisLine++;
@@ -58,21 +58,24 @@ bool secondPass(FILE* fp, labelData* labels, int labelCount, unsigned int* codeA
 			while (scanStrAndMove(&lineStr, "%s", temp) > 0) {
 				strcat(parameters, temp);
 			}
-			IC = labelLines[linesWithLabels + 1];
-			int opReturn = operationLabelCode(currentOperation, parameters, codeArray, thisLine, IC, labels, labelCount);
+			
+			int opReturn = operationLabelCode(currentOperation, parameters, codeArray, thisLine, currentIC, labels, labelCount);
 			if (opReturn == -1) {
 				retVal = false;
-				continue;
+					
 			}
-			if (opReturn == 2) {
-				extArray[*extArrayLength].IC = IC;
+			else if (opReturn == 2) {
+				extArray[*extArrayLength].IC = currentIC;
 				strcpy(extArray[*extArrayLength].label, parameters);
 				linesWithLabels++;
 				(*extArrayLength)++;
-				continue;
+					
 			}
-			linesWithLabels += opReturn;
+			else {
+				linesWithLabels += opReturn;
+			}
 		}
+		if (opNum >= 0) currentIC += 4;
 	}
 	return retVal;
 }

@@ -7,6 +7,7 @@
 
 char* getFileName(char*);
 
+/*creates the object file*/
 bool createObject(unsigned int* codeArray, unsigned char* dataArray, int IC, int DC, char* assemblyFileName) {
 	FILE* fp;
 	int byteCount = 0;
@@ -34,7 +35,7 @@ bool createObject(unsigned int* codeArray, unsigned char* dataArray, int IC, int
 	return true;
 }
 
-
+/*creates the entries file*/
 bool createEnt(labelData* labels, int labelCount, char* assemblyFileName)
 {
 	FILE* fp;
@@ -58,6 +59,7 @@ bool createEnt(labelData* labels, int labelCount, char* assemblyFileName)
 	return true;
 }
 
+/*creates the exturnals file*/
 bool createExt(extUse* extArray, int extArrayLength, char* assemblyFileName) {
 	FILE* fp;
 	int i = 0;
@@ -78,6 +80,7 @@ bool createExt(extUse* extArray, int extArrayLength, char* assemblyFileName) {
 	return true;
 }
 
+/*removes the .as */
 char* getFileName(char* fileName)
 {
 	int i = 0;

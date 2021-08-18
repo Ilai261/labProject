@@ -6,7 +6,7 @@
 #include <ctype.h>
 #include <string.h>
 
-/*checks if a label name fits the label format, prints error messages if neaded and returns true if no error messages are printed*/
+/*checks if a label name fits the label format, prints error messages if neaded and returns true if no messages are printed*/
 bool checkLabel(char* labelName, labelData* labels, int labelCount, operationData* operations, int lineCount);
 
 /*writes data to the data array for data storage guidance instructions, updates DC accordingly*/
@@ -15,19 +15,22 @@ void writeDataFromGuidance(int guidanceNum, unsigned char** dataArray, int* DC, 
 /*turns operations and parameters to thare corrosponding binary code, returns the four bytes of code as an int*/
 int operationCode(operationData currentOperation, char* parameters);
 
-/*checks if the parameters of an operation fit its format, prints error messages if neaded and returns true if no error messages are printed*/
-bool operationParameterCheck(int line, int IC, char* parameters, operationData currentOperation, int** labelLines);
+/*checks if the parameters of an operation fit its format, prints error messages if neaded and returns true if no messages are printed*/
+bool operationParameterCheck(int line, int IC, char* parameters, operationData currentOperation);
 
-/*checks if the parameters of A guidance instructions fit its format, prints error messages if neaded and returns true if no error messages are printed*/
+/*checks if the parameters of A guidance instructions fit its format, prints error messages if neaded and returns true if no messages are printed*/
 bool checkGuidanceParam(int line, int guidanceNum, char* parameters);
+
+/*checks the general format of any parmeters, commas number and spaces, prints error messages if neaded and returns true if no messages are printed*/
+bool checkParameterFormat(char* param, int line);
+
 
 /*runs the first pass of the assembler, it fils the data array labels array and code array as much as possible and checs the code for errors, 
 if successful it returns the number of labels and if not it returns -1*/
-int firstPass(FILE* fp, labelData** labels, unsigned char** dataArray, unsigned int** codeArray, int* IC, int* DC,int* JOpCounter, operationData* operations, int ** labelLines)
+bool firstPass(FILE* fp, labelData** labels, int* labelCount, unsigned char** dataArray, unsigned int** codeArray, int* IC, int* DC,int* JOpCounter, operationData* operations)
 {
 	char* line = malloc(MAXLINESTRLENGTH); /*the line string*/
 	char* ogLine = line; /*the original address of the line string*/
-	int labelCount = 0;
 	int lineLength = 0;
 	int lineCount = 1;
 	bool isSuccessful = true;
@@ -84,25 +87,25 @@ int firstPass(FILE* fp, labelData** labels, unsigned char** dataArray, unsigned 
 				char* operationName;
 				int operationNumber;
 				operationData currentOperation;
-				char *labelName = malloc(MAXLABELSTRLENGTH);
+				char *labelName = malloc(MAXLABELSTRLENGTH + 2);
 				bool isLabel = false;
 				bool isLabelOk = true;
 				int codeByte;
 				int i = 0;
-				if (scanStrAndMove(&line, "%s", labelName) == 1)
+				if (scanStrAndMove(&line, "%33s", labelName) == 1)
 				{
 					while (labelName[i] != '\0') i++;
 					if (labelName[i - 1] == ':') {
 						labelName[i - 1] = '\0';
-						isLabelOk = checkLabel(labelName, *labels, labelCount, operations, lineCount);
+						isLabelOk = checkLabel(labelName, *labels, *labelCount, operations, lineCount);
 						if (isLabelOk)
 						 {
 
 							isLabel = true;
-							if (labelCount % 10 == 0) {
-								*labels = (labelData*)realloc(*labels, sizeof(labelData) * (labelCount + 10));
+							if ((*labelCount) % 10 == 0) {
+								*labels = (labelData*)realloc(*labels, sizeof(labelData) * (*labelCount + 10));
 							}
-							labelCount++;
+							(*labelCount)++;
 						}
 					}
 				}
@@ -139,17 +142,24 @@ int firstPass(FILE* fp, labelData** labels, unsigned char** dataArray, unsigned 
 					}
 					else
 					{
+						if (guidanceNum <= 2 && !checkParameterFormat(line, lineCount)) {
+							free(labelName);
+							isSuccessful = false;
+							isNewLine = true;
+							continue;
+						}
 						while (scanStrAndMove(&line, "%s", temp) > 0) {
 							strcat(dataString, temp);
 						}
 					}
 					if (checkGuidanceParam(lineCount, guidanceNum, dataString)){
+						
 						if (guidanceNum <= 3) {
 							if (isLabel) {
 								labelToAdd.symbol[0] = '\0'; labelToAdd.address = *(DC); labelToAdd.isEntry = false;
 									labelToAdd.isExternal = false; labelToAdd.isData = true; labelToAdd.isCode = false;
 									strcat(labelToAdd.symbol, labelName);
-									(*labels)[labelCount - 1] = labelToAdd;
+									(*labels)[*labelCount - 1] = labelToAdd;
 							}
 							writeDataFromGuidance(guidanceNum, dataArray, DC, dataString);
 						}
@@ -160,15 +170,15 @@ int firstPass(FILE* fp, labelData** labels, unsigned char** dataArray, unsigned 
 								continue;
 							}
 							if (guidanceNum == 5) {
-								if (checkLabel(dataString, *labels, labelCount, operations, lineCount)) {
-									if (labelCount % 10 == 0) {
-										*labels = (labelData*)realloc((*labels), sizeof(labelData) * (labelCount + 10));
+								if (checkLabel(dataString, *labels, *labelCount, operations, lineCount)) {
+									if ((*labelCount) % 10 == 0) {
+										*labels = (labelData*)realloc((*labels), sizeof(labelData) * (*labelCount + 10));
 									}
-									labelCount++;
+									(*labelCount)++;
 									labelToAdd.symbol[0] = '\0'; labelToAdd.address = 0; labelToAdd.isEntry = false;
 									labelToAdd.isExternal = true; labelToAdd.isData = false; labelToAdd.isCode = false;
 									strcat(labelToAdd.symbol, dataString);
-									(*labels)[labelCount - 1] = labelToAdd;
+									(*labels)[*labelCount - 1] = labelToAdd;
 									if (isLabel) printf("Line %d: label before extern is meaningless\n", lineCount);
 								}
 
@@ -187,7 +197,7 @@ int firstPass(FILE* fp, labelData** labels, unsigned char** dataArray, unsigned 
 						labelToAdd.symbol[0] = '\0'; labelToAdd.address = *(IC); labelToAdd.isEntry = false; 
 						labelToAdd.isExternal = false; labelToAdd.isData = false; labelToAdd.isCode = true;
 						strcat(labelToAdd.symbol, labelName);
-						(*labels)[labelCount-1] = labelToAdd;
+						(*labels)[*labelCount-1] = labelToAdd;
 					}
 
 					operationNumber = operationNum(operations, operationName);
@@ -202,6 +212,12 @@ int firstPass(FILE* fp, labelData** labels, unsigned char** dataArray, unsigned 
 
 					currentOperation = operations[operationNumber];
 					if (currentOperation.operationType == 'J') (*JOpCounter)++;
+					if (!checkParameterFormat(line, lineCount)) {
+						free(labelName);
+						isSuccessful = false;
+						isNewLine = true;
+						continue;
+					}
 					while (scanStrAndMove(&line, "%s", temp) > 0) {
 						strcat(parameters, temp);
 					}
@@ -210,7 +226,7 @@ int firstPass(FILE* fp, labelData** labels, unsigned char** dataArray, unsigned 
 					if (codeByte % 40 == 0) {
 						*codeArray = realloc((*codeArray), codeByte + 40);
 					}
-					if (operationParameterCheck( lineCount,*IC, parameters, currentOperation, labelLines)) {
+					if (operationParameterCheck( lineCount,*IC, parameters, currentOperation)) {
 						(*codeArray)[codeByte / 4] = operationCode(currentOperation, parameters);/*set the four bytes to thare corrosponding binary code*/
 						*IC += 4;
 					}
@@ -239,8 +255,7 @@ int firstPass(FILE* fp, labelData** labels, unsigned char** dataArray, unsigned 
 	}
 	free(ogLine);
 	/*same as else*/	
-	if (!isSuccessful) return -1;
-	return labelCount;
+	return isSuccessful;
 }
  
 bool checkLabel(char* labelName, labelData* labels, int labelCount, operationData* operations, int lineCount)
@@ -417,7 +432,7 @@ int operationCode(operationData currentOperation, char* parameters) {
 	return retVal;
 }
 
-bool operationParameterCheck(int line, int IC, char* parameters, operationData currentOperation, int** labelLines)
+bool operationParameterCheck(int line, int IC, char* parameters, operationData currentOperation)
 {
 	int i;
 	int paramNum = 0;
@@ -634,12 +649,6 @@ bool operationParameterCheck(int line, int IC, char* parameters, operationData c
 					printf("Line %d: invalid char in %s operation parameters\n", line, currentOperation.operationName);
 					return false;
 				}
-				if (*labelLines[0] % 10 == 0)
-				{
-					*labelLines = realloc(*labelLines, (*labelLines)[0] + 40);
-				}
-				(*labelLines)[0]++;
-				(*labelLines)[(*labelLines)[0]] = IC;
 				return true;
 			}
 
@@ -666,17 +675,10 @@ bool operationParameterCheck(int line, int IC, char* parameters, operationData c
 						return false;
 					}
 				}
-				else
-				{
-					if (*labelLines[0] % 10 == 0)
-					{
-						*labelLines = realloc(*labelLines, (*labelLines)[0] + 40);
-					}
-					(*labelLines)[0]++;
-					(*labelLines)[(*labelLines)[0]] = IC;
-					return true;
+				if (!isspace(*parameters) && *parameters != '\0') {
+					printf("Line %d: unknown chars in operation parameters\n", line);
+					return false;
 				}
-
 			}
 			else
 			{
@@ -684,16 +686,6 @@ bool operationParameterCheck(int line, int IC, char* parameters, operationData c
 				{
 					printf("Line %d: invalid label defining\n", line);
 					return false;
-				}
-				else
-				{
-					if (*labelLines[0] % 10 == 0)
-					{
-						*labelLines = realloc(*labelLines, (*labelLines)[0] + 40);
-					}
-					(*labelLines)[0]++;
-					(*labelLines)[(*labelLines)[0]] = IC;
-					return true;
 				}
 			}
 			return true;
@@ -704,16 +696,6 @@ bool operationParameterCheck(int line, int IC, char* parameters, operationData c
 			{
 				printf("Line %d: invalid label defining\n", line);
 				return false;
-			}
-			else
-			{
-				if (*labelLines[0] % 10 == 0)
-				{
-					*labelLines = realloc(*labelLines, (*labelLines)[0] + 40);
-				}
-				(*labelLines)[0]++;
-				(*labelLines)[(*labelLines)[0]] = IC;
-				return true;
 			}
 		}
 		if (currentOperation.opcode == 63)
@@ -730,8 +712,9 @@ bool operationParameterCheck(int line, int IC, char* parameters, operationData c
 
 bool checkGuidanceParam(int line, int guidanceNum, char* parameters)
 {
+	int numOfCommas = 0;
 	int num;
-	int countParamLengths = 0;
+	int countParamLengths = -1;
 	int countParam = 0;
 	int parametersLength = strlen(parameters);
 	if (guidanceNum < 0)
@@ -752,6 +735,7 @@ bool checkGuidanceParam(int line, int guidanceNum, char* parameters)
 				printf("Line %d: invalid parameter defining, no comma\n", line);
 				return false;
 			}
+			if (*parameters == COMMA) numOfCommas++;
 			countParamLengths += (numberLength(num) + 1);
 			countParam++;
 		}
@@ -763,6 +747,12 @@ bool checkGuidanceParam(int line, int guidanceNum, char* parameters)
 		if (countParamLengths < parametersLength)
 		{
 			printf("Line %d: invalid char in operation parameters\n", line);
+
+			return false;
+		}
+		if (countParam != numOfCommas + 1)
+		{
+			printf("Line % d: invalid parameter defining, wrong use of commas\n", line);
 
 			return false;
 		}
@@ -782,6 +772,7 @@ bool checkGuidanceParam(int line, int guidanceNum, char* parameters)
 				printf("Line %d: invalid parameter defining, no comma\n", line);
 				return false;
 			}
+			if (*parameters == COMMA) numOfCommas++;
 			countParamLengths += (numberLength(num) + 1);
 			countParam++;
 		}
@@ -793,6 +784,12 @@ bool checkGuidanceParam(int line, int guidanceNum, char* parameters)
 		if (countParamLengths < parametersLength)
 		{
 			printf("Line %d: invalid char in operation parameters\n", line);
+
+			return false;
+		}
+		if (countParam != numOfCommas + 1)
+		{
+			printf("Line % d: invalid parameter defining, wrong use of commas\n", line);
 
 			return false;
 		}
@@ -812,6 +809,7 @@ bool checkGuidanceParam(int line, int guidanceNum, char* parameters)
 				printf("Line %d: invalid parameter defining, no comma\n", line);
 				return false;
 			}
+			if (*parameters == COMMA) numOfCommas++;
 			countParamLengths += (numberLength(num) + 1);
 			countParam++;
 		}
@@ -823,6 +821,12 @@ bool checkGuidanceParam(int line, int guidanceNum, char* parameters)
 		if (countParamLengths < parametersLength)
 		{
 			printf("Line %d: invalid char in operation parameters\n", line);
+
+			return false;
+		}
+		if (countParam != numOfCommas + 1)
+		{
+			printf("Line % d: invalid parameter defining, wrong use of commas\n", line);
 
 			return false;
 		}
@@ -856,6 +860,29 @@ bool checkGuidanceParam(int line, int guidanceNum, char* parameters)
 
 		}
 		return true;
+	}
+	return true;
+}
+
+bool checkParameterFormat(char* param, int line)
+{
+	bool isNum = true;
+	int idx = 0;
+	while (param[idx] != '\0' && param[idx] != EOF) {
+		bool numDone = true;
+		if (param[idx] == COMMA) isNum = true;
+		if ((isdigit(param[idx]) || param[idx] == DOLLAR) && isNum == false) {
+			printf("Line %d: invalid parameter format\n", line);
+			return false;
+		}
+		
+		while (isdigit(param[idx]) || param[idx] == DOLLAR) {
+			isNum = false;
+			numDone = false;
+			idx++;
+		}
+
+		if(numDone) idx++;
 	}
 	return true;
 }
