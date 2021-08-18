@@ -43,7 +43,7 @@ int isGuidance(char* string){
 	return -1;
 }
 
-/*This function gets an unsigned int, startBit and endBit ints and edits the bits from startBit to endBit to data*/
+/*This function gets an address, a startBit and endBit integers, and the data to write and sets the bits from startBit to endBit accordingly */
 void writeToBits(unsigned int * placeToWrite,int startBit, int endBit, int data)
 {
 	unsigned int mask = intPow(2,32) - 1;
@@ -54,7 +54,7 @@ void writeToBits(unsigned int * placeToWrite,int startBit, int endBit, int data)
 	
 }
 
-/*This functions receives 2 ints, base and exp and returns base to the power of exp*/
+/*This functions receives 2 ints, base and exp, and returns base to the power of exp*/
 int intPow(int base, int exp)
 {
     int result = 1;
@@ -71,7 +71,10 @@ int intPow(int base, int exp)
     return result;
 }
 
-/*This function gets a string, skips in it so long there are white chars, scans in it a string in a certain format formatString, and puts it into writeString's reference*/
+/*This function gets a string address, skips the white chars, and scans for a string in a certain format formatString.
+It advances the start address of the input string so the next search can start there (trims the searched part).
+It sets the found string into writeString's reference*/
+
 int scanStrAndMove(char **readStringPtr, char* formatString, char * writeString)
 {
 	int retVal;
@@ -86,7 +89,10 @@ int scanStrAndMove(char **readStringPtr, char* formatString, char * writeString)
 	return retVal;
 }
 
-/*This function gets a string, skips in it so long there are white chars, scans in it in a certain format formatString, and puts it into writeString's reference*/
+/*This function gets a string address, skips the white chars, and scans for an integer in a certain format formatString.
+It advances the start address of the input string so the next search can start there (trims the searched part).
+It sets the found string into writeString's reference*/
+
 int scanIntAndMove(char **readString, char* formatString, int * writeInt)
 {
 	int retVal;
@@ -114,7 +120,11 @@ int numberLength(int num)
 	return retVal;
 }
 
-/*This function gets a string, skips in it so long there are no numbers, scans in it in a certain format formatString, and puts it into writeString's reference*/
+/*This function gets a string address, skips the white chars, and scans for an integer in a certain format formatString.
+It advances the start address of the input string so the next search can start there (trims the searched part).
+It sets the found string into writeString's reference.
+Works in other cases of scanIntAndMove */
+
 int moveAndScanInt(char** readString, char* formatString, int* writeInt)
  {
 	int retVal;

@@ -8,7 +8,7 @@
 
 #include <stdlib.h>
 
-/*This function gets a string and returns true if it ends with .as, and false if else. Therefore it checks if a file is approved for assmebling in our project.*/
+/*This function gets a string and returns true if it ends with .as, false otherwise. */
 bool fileApproved(char* fileName);
 
 /*This is the main function that runs the assembler*/ 
