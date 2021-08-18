@@ -714,7 +714,7 @@ bool operationParameterCheck(int line, int IC, char* parameters, operationData c
 bool checkGuidanceParam(int line, int guidanceNum, char* parameters)
 {
 	int numOfCommas = 0;
-	long int num;
+	int num;
 	int countParamLengths = -1;
 	int countParam = 0;
 	int parametersLength = strlen(parameters);
@@ -724,7 +724,7 @@ bool checkGuidanceParam(int line, int guidanceNum, char* parameters)
 	}
 	if (guidanceNum == 0)
 	{
-		while (moveAndScanInt(&parameters, "%ld", &num) > 0)
+		while (moveAndScanInt(&parameters, "%d", &num) > 0)
 		{
 			if (num > 127 || num < -128)
 			{
@@ -761,7 +761,7 @@ bool checkGuidanceParam(int line, int guidanceNum, char* parameters)
 	}
 	if (guidanceNum == 1)
 	{
-		while (moveAndScanInt(&parameters, "%ld", &num) > 0)
+		while (moveAndScanInt(&parameters, "%d", &num) > 0)
 		{
 			if (num > 32767 || num < -32768)
 			{
@@ -796,11 +796,13 @@ bool checkGuidanceParam(int line, int guidanceNum, char* parameters)
 		}
 		return true;
 	}
+
 	if (guidanceNum == 2)
 	{
-		while (moveAndScanInt(&parameters, "%ld", &num) > 0)
+		long int longNum;
+		while (moveAndScanInt(&parameters, "%ld", (int*)&longNum) > 0)
 		{
-			if (num > 2147483647 || num < -2147483647)
+			if (longNum > 2147483647l || longNum < -2147483647l)
 			{
 				printf("Line %d: invalid parameter number, should be between -2147483648 and 2147483647\n", line);
 				return false;
@@ -811,7 +813,7 @@ bool checkGuidanceParam(int line, int guidanceNum, char* parameters)
 				return false;
 			}
 			if (*parameters == COMMA) numOfCommas++;
-			countParamLengths += (numberLength(num) + 1);
+			countParamLengths += (numberLength((int)longNum) + 1);
 			countParam++;
 		}
 		if (countParam < 1)
