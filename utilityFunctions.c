@@ -4,7 +4,7 @@
 #include <ctype.h>
 #include <stdlib.h>
 
-/*This function checks the location of an operation in the operations array and returns it. return -1 if it's not in the array.*/
+/*This function returns the index of an operation in the operations array. returns -1 if it's not in the array. */
 int operationNum(operationData* operations, char* string){
 	int i;
 	for(i = 0; i < NUMOFOPERATIONS; i++)
@@ -17,7 +17,7 @@ int operationNum(operationData* operations, char* string){
 	return -1;	
 }
 
-/*This function checks the location of a label in the labels array and returns it. return -1 if it's not in the array.*/
+/*This function returns the index of a label in the labels array. returns -1 if it's not in the array. */
 int labelNum(labelData* labels,int labelCount, char* string){
 	int i;
 	for(i = 0; i < labelCount; i++)

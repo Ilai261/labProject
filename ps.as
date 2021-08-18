@@ -31,7 +31,7 @@ R: lb $4,345,$7
   la F
   call V
   W: .db 1,34,76,24
+STR: .asciz "Omri and Ilai"
    .dh 23,45,75,32
    .dw 21314,32423,5645,675
-STR: .asciz "nadav pivonia"
 END: stop

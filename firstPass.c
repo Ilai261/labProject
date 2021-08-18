@@ -6,27 +6,28 @@
 #include <ctype.h>
 #include <string.h>
 
-/*checks if a label name fits the label format, prints error messages if neaded and returns true if no messages are printed*/
+/*checks if a label name fits the label format. prints error messages if needed and returns true if no messages are printed*/
 bool checkLabel(char* labelName, labelData* labels, int labelCount, operationData* operations, int lineCount);
 
-/*writes data to the data array for data storage guidance instructions, updates DC accordingly*/
+/*writes data to the data array for data storage guidance instructions. updates DC accordingly*/
 void writeDataFromGuidance(int guidanceNum, unsigned char** dataArray, int* DC, char* dataString);
 
-/*turns operations and parameters to thare corrosponding binary code, returns the four bytes of code as an int*/
+/*turns operations and parameters to their corresponding binary code. returns the four bytes of code as an int*/
 int operationCode(operationData currentOperation, char* parameters);
 
-/*checks if the parameters of an operation fit its format, prints error messages if neaded and returns true if no messages are printed*/
+/*checks if the parameters of an operation fit its format. prints error messages if needed and returns true if no messages are printed*/
 bool operationParameterCheck(int line, int IC, char* parameters, operationData currentOperation);
 
-/*checks if the parameters of A guidance instructions fit its format, prints error messages if neaded and returns true if no messages are printed*/
+/*checks if the parameters of a guidance instructions fit its format. prints error messages if needed and returns true if no messages are printed*/
 bool checkGuidanceParam(int line, int guidanceNum, char* parameters);
 
-/*checks the general format of any parmeters, commas number and spaces, prints error messages if neaded and returns true if no messages are printed*/
+/*checks the general format of all parameters, commas, numbers, and spaces. prints error messages if needed and returns true if no messages are printed*/
 bool checkParameterFormat(char* param, int line);
 
 
-/*runs the first pass of the assembler, it fils the data array labels array and code array as much as possible and checs the code for errors, 
-if successful it returns the number of labels and if not it returns -1*/
+/*runs the first pass of the assembler. It fills the data array, labels array, and code array as much as possible and checks the code for errors.
+If successful - returns true, otherwise returns false*/
+
 bool firstPass(FILE* fp, labelData** labels, int* labelCount, unsigned char** dataArray, unsigned int** codeArray, int* IC, int* DC,int* JOpCounter, operationData* operations)
 {
 	char* line = malloc(MAXLINESTRLENGTH); /*the line string*/

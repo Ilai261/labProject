@@ -13,7 +13,7 @@ bool createObject(unsigned int* codeArray, unsigned char* dataArray, int IC, int
 	int byteCount = 0;
 	char* fileName = getFileName(assemblyFileName);
 	strcat(fileName, ".ob");
-	fp = fopen(fileName, "w"); /*change to if != NULL sussy*/
+	fp = fopen(fileName, "w");
 	if (fp != NULL) {
 		fprintf(fp, "	%d %d", IC - 100, DC);
 		while (byteCount < IC - 100) {
@@ -59,7 +59,7 @@ bool createEnt(labelData* labels, int labelCount, char* assemblyFileName)
 	return true;
 }
 
-/*creates the exturnals file*/
+/*creates the externals file*/
 bool createExt(extUse* extArray, int extArrayLength, char* assemblyFileName) {
 	FILE* fp;
 	int i = 0;

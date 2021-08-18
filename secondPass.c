@@ -4,12 +4,15 @@
 #include "utilityFunctions.h"
 
 #include <string.h>
-/* Completes the binary code that could not be written in the first pass And checks the parameters for errors,
-Returns -1 if there is an error, 0 if it didn't Write, 1 if it wrote code and 2 if the label used is external*/
+
+/* Completes the binary code that could not be written in the first pass and checks the parameters for errors.
+Returns: -1 if there is an error, 0 if it didn't Write, 1 if it wrote code, and 2 if the label used is external*/
+
 int operationLabelCode(operationData currentOperation, char* parameters, unsigned int* codeArray, int lineNum, int IC, labelData* labels, int labelCount);
 
-/*runs the second pass of the assembler, it fils the parts of data array that could not be written in the first pass and checks the code for errors,
+/*runs the second pass of the assembler. it fills the parts of data array that could not be written in the first pass and checks the code for errors.
 if successful it returns true*/
+
 bool secondPass(FILE* fp, labelData* labels, int labelCount, unsigned int* codeArray, int* IC, int* DC, extUse* extArray,int* extArrayLength, operationData* operations)
 {
 	int thisLine = 0;
@@ -54,7 +57,7 @@ bool secondPass(FILE* fp, labelData* labels, int labelCount, unsigned int* codeA
 		opName = opScanStr;
 		int opNum = operationNum(operations, opName);
 		currentOperation = operations[opNum];
-		if (currentOperation.opcode >= 15) {/*write the missing code */
+		if (currentOperation.opcode >= 15) {	/*write the missing code */
 			while (scanStrAndMove(&lineStr, "%s", temp) > 0) {
 				strcat(parameters, temp);
 			}
@@ -81,6 +84,7 @@ bool secondPass(FILE* fp, labelData* labels, int labelCount, unsigned int* codeA
 }
 
 int operationLabelCode(operationData currentOperation, char* parameters, unsigned int* codeArray, int lineNum, int IC, labelData* labels, int labelCount) {
+	
 	labelData paramLabel;
 	int opPos = (IC - 100) / 4;
 	int labelNumber;
