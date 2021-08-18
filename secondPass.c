@@ -28,6 +28,9 @@ bool secondPass(FILE* fp, labelData* labels, int labelCount, unsigned int* codeA
 	operationData currentOperation;
 	bool retVal = true;
 	int currentIC = 100;
+	int lineLength;
+	int opNum;
+	int opReturn;
 
 	for (i = 0; i < labelCount; i++) { /*update the label addresses*/
 		if (labels[i].isData) {
@@ -40,7 +43,7 @@ bool secondPass(FILE* fp, labelData* labels, int labelCount, unsigned int* codeA
 		temp[0] = '\0';
 		parameters[0] = '\0';
 		thisLine++;
-		int lineLength = strlen(oglineStr);
+		lineLength = strlen(oglineStr);
 		if(oglineStr[lineLength -1] == '\n') oglineStr[lineLength -1] = '\0';
 		lineStr = oglineStr;
 		scanStrAndMove(&lineStr, "%s", opScanStr);
@@ -55,14 +58,14 @@ bool secondPass(FILE* fp, labelData* labels, int labelCount, unsigned int* codeA
 		}
 
 		opName = opScanStr;
-		int opNum = operationNum(operations, opName);
+		opNum = operationNum(operations, opName);
 		currentOperation = operations[opNum];
 		if (currentOperation.opcode >= 15) {	/*write the missing code */
 			while (scanStrAndMove(&lineStr, "%s", temp) > 0) {
 				strcat(parameters, temp);
 			}
 			
-			int opReturn = operationLabelCode(currentOperation, parameters, codeArray, thisLine, currentIC, labels, labelCount);
+			opReturn = operationLabelCode(currentOperation, parameters, codeArray, thisLine, currentIC, labels, labelCount);
 			if (opReturn == -1) {
 				retVal = false;
 					
