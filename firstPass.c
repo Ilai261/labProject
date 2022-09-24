@@ -800,9 +800,9 @@ bool checkGuidanceParam(int line, int guidanceNum, char* parameters)
 	if (guidanceNum == 2)
 	{
 		double longNum;
-		while (sscanf(parameters, "%lf", &longNum) > 0)
+		while (sscanf(parameters, "%lf", &longNum) > 0|| sscanf(parameters, ",%lf", &longNum) > 0)
 		{
-			if (longNum > 2147483647.0 || longNum < -2147483647.0)
+			if (longNum > 2147483647.0 || longNum < -2147483648.0)
 			{
 				printf("Line %d: invalid parameter number, should be between -2147483648 and 2147483647\n", line);
 				return false;
